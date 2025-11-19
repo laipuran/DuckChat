@@ -8,13 +8,15 @@ set -e
 # 项目根目录
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 编译选项
-CXX="g++"
-CXXFLAGS="-g3 -O0 -std=c++11 -Wall -Wextra"
-INCLUDES="-I${PROJECT_ROOT}/common -I${PROJECT_ROOT}/third_party -I${PROJECT_ROOT}/server"
-LIBS="-pthread"
+# 引入统一配置文件
+source "${PROJECT_ROOT}/config.sh"
 
-# 输出目录
+# 使用配置文件中的变量（覆盖项目根目录相关的路径）
+# 重新设置包含路径，确保使用正确的项目根目录
+INCLUDES="-I${PROJECT_ROOT}/common -I${PROJECT_ROOT}/third_party -I${PROJECT_ROOT}/server"
+LIBS="$THIRD_PARTY_LIBS"
+
+# 输出目录（使用配置文件中的路径）
 SERVER_OUTPUT="${PROJECT_ROOT}/server/server"
 CLIENT_OUTPUT="${PROJECT_ROOT}/client/client"
 

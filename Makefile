@@ -6,15 +6,18 @@
 #   make clean   - 清理编译产物
 #   make help    - 显示帮助
 
-# 编译器设置
-CXX = g++
-CXXFLAGS = -g3 -O0 -std=c++11 -Wall -Wextra
-INCLUDES = -I./common -I./third_party -I./server
-LIBS = -pthread
+# 引入统一配置文件
+include config.sh
 
-# 输出文件
-SERVER_OUTPUT = server/server
-CLIENT_OUTPUT = client/client
+# 使用配置文件中的变量（使用 := 避免递归引用）
+CXX := $(shell bash -c 'source config.sh && echo $$CXX')
+CXXFLAGS := $(shell bash -c 'source config.sh && echo $$CXXFLAGS')
+INCLUDES := $(shell bash -c 'source config.sh && echo $$INCLUDES')
+LIBS := $(shell bash -c 'source config.sh && echo $$THIRD_PARTY_LIBS')
+
+# 输出文件（使用配置文件中的路径）
+SERVER_OUTPUT := $(shell bash -c 'source config.sh && echo $$SERVER_OUTPUT')
+CLIENT_OUTPUT := $(shell bash -c 'source config.sh && echo $$CLIENT_OUTPUT')
 
 # 自动发现源文件
 SERVER_SOURCES = $(shell find server -name "*.cpp" 2>/dev/null | sort)
