@@ -23,7 +23,7 @@ struct ClientPacket
     ClientMessage request;
 
     std::string username;
-    std::string password; // 同时用于 LOGIN
+    std::string password_hash; // 同时用于 LOGIN
 
     std::string user_id; // 用于所有消息发送和撤回
 
@@ -49,7 +49,7 @@ struct ClientPacket
         })
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(
         ClientPacket, request,
-        username, password, user_id,
+        username, password_hash, user_id,
         chat_id, chatname, message_id, message)
 };
 
@@ -62,14 +62,28 @@ enum class ServerMessage
     RETURN_MESSAGES
 };
 
+enum class ServerStatus
+{
+    SUCCESS,
+    USER_NOT_FOUND,
+    INVALID_PASSWORD,
+
+    User_EXISTS,
+
+    CHAT_NOT_FOUND,
+
+    CHAT_EXISTS,
+};
+
 struct ServerPacket
 {
     ServerMessage request;
 
-    int status;
+    ServerStatus status;
     std::string user_id;
     std::string username;
     std::string chat_id;
+    std::string chatname;
     std::vector<ClientPacket> message_list;
 
     NLOHMANN_JSON_SERIALIZE_ENUM(
@@ -81,8 +95,18 @@ struct ServerPacket
             {ServerMessage::JOIN_CHAT_RESPONSE, "JOIN_CHAT_RESPONSE"},
             {ServerMessage::RETURN_MESSAGES, "RETURN_MESSAGES"},
         })
+    NLOHMANN_JSON_SERIALIZE_ENUM(
+        ServerStatus,
+        {
+            {ServerStatus::SUCCESS, "SUCCESS"},
+            {ServerStatus::USER_NOT_FOUND, "USER_NOT_FOUND"},
+            {ServerStatus::INVALID_PASSWORD, "INVALID_PASSWORD"},
+            {ServerStatus::User_EXISTS, "USER_EXISTS"},
+            {ServerStatus::CHAT_NOT_FOUND, "CHAT_NOT_FOUND"},
+            {ServerStatus::CHAT_EXISTS, "CHAT_EXISTS"},
+        })
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(
         ServerPacket, request, status,
         user_id, username, chat_id,
-        message_list)
+        chatname, message_list)
 };
