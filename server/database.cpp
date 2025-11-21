@@ -5,6 +5,13 @@
 
 using namespace std;
 
+Message::Message() {}
+
+Message::Message(const ClientPacket &packet, const string &timestamp)
+    : message_id(packet.message_id), user_id(packet.user_id),
+      username(packet.username), content(packet.message),
+      timestamp(timestamp) {};
+
 Database::Database(const string &db_path)
 {
     int status = sqlite3_open(db_path.data(), &db);
@@ -198,8 +205,7 @@ vector<ChatInfo> Database::list_user_chats(const string &user_id)
         {"SELECT cm.chat_id, cm.role, c.chatname"
          "FROM chat_members cm"
          "JOIN chats c ON cm.chat_id = c.chat_id"
-         "WHERE cm.user_id = ? "
-         "ORDER BY m.sent_at ASC;"};
+         "WHERE cm.user_id = ? "};
 
     sqlite3_bind_text(statement, 1, user_id.c_str(), -1, SQLITE_TRANSIENT);
 
@@ -263,6 +269,26 @@ bool Database::add_chat(
     return flag == SQLITE_DONE;
 }
 
+std::vector<std::string> Database::get_chat_members(const std::string &chat_id)
+{
+    sqlite3_stmt *statement;
+    sqlite3_prepare_v2(db, "SELECT user_id FROM chat_members WHERE chat_id = ?",
+                       -1, &statement, nullptr);
+
+    sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
+
+    vector<string> result;
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        const u_char *user_id = sqlite3_column_text(statement, 0);
+        if (user_id != nullptr)
+            result.push_back(reinterpret_cast<const char *>(user_id));
+    }
+
+    sqlite3_finalize(statement);
+    return result;
+}
+
 bool Database::add_chat_member(
     const std::string &user_id,
     const std::string &chat_id,
@@ -291,7 +317,7 @@ bool Database::leave_chat(
     sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
 
     sqlite3_bind_text(statement, 1, user_id.c_str(), -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 2, chat_id.c_str(), -1, SQLITE_TRANSIENT);
 
     int flag = sqlite3_step(statement);
     sqlite3_finalize(statement);

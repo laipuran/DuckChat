@@ -17,6 +17,9 @@ struct Message
     std::string username;
     std::string content;
     std::string timestamp;
+
+    Message();
+    Message(const ClientPacket &packet, const std::string &timestamp);
 };
 
 class Database
@@ -58,6 +61,8 @@ public:
         const std::string &user_id,
         const std::string &chat_id,
         const std::string &chatname);
+
+    std::vector<std::string> get_chat_members(const std::string &chat_id);
 
     bool add_chat_member(
         const std::string &user_id,
