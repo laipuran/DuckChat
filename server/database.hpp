@@ -6,15 +6,15 @@
 struct ChatInfo
 {
     std::string chat_id;
+    std::string role;
     std::string chatname;
-    std::string creator_user_id;
-    std::vector<std::string> members; 
 };
 
 struct Message
 {
     std::string message_id;
     std::string user_id;
+    std::string username;
     std::string content;
     std::string timestamp;
 };
@@ -28,7 +28,7 @@ public:
     Database(const std::string &db_path);
     ~Database();
 
-    bool exist_user(const std::string& user_id);
+    bool exist_user(const std::string &user_id);
     bool add_user(
         const std::string &user_id,
         const std::string &username,
@@ -37,14 +37,16 @@ public:
     std::string get_username(const std::string &user_id);
     std::string get_password_hash(const std::string &user_id);
 
-    void add_message(
+    bool add_message(
         const std::string &user_id,
         const std::string &chat_id,
         const std::string &message_id,
         const std::string &message);
 
-    void delete_message(
+    bool delete_message(
         const std::string &message_id);
+
+    bool chat_exist(const std::string &chat_id);
 
     std::vector<ChatInfo> list_user_chats(
         const std::string &user_id);
@@ -52,14 +54,15 @@ public:
     std::vector<Message> fetch_chat_messages(
         const std::string &chat_id);
 
-    void add_chat(
+    bool add_chat(
         const std::string &user_id,
         const std::string &chat_id,
         const std::string &chatname);
 
     bool add_chat_member(
         const std::string &user_id,
-        const std::string &chat_id);
+        const std::string &chat_id,
+        const std::string &role);
 
     bool leave_chat(
         const std::string &user_id,

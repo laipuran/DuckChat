@@ -11,7 +11,7 @@ Database::Database(const string &db_path)
     if (status != SQLITE_OK)
     {
         log(LogLevel::ERROR, sqlite3_errmsg(db));
-        std::filesystem::remove(db_path);
+        filesystem::remove(db_path);
 
         sqlite3_open(db_path.data(), &db);
     }
@@ -53,7 +53,15 @@ Database::Database(const string &db_path)
     }
 }
 
-bool Database::exist_user(const std::string &user_id)
+Database::~Database()
+{
+    if (db)
+    {
+        sqlite3_close(db);
+    }
+}
+
+bool Database::exist_user(const string &user_id)
 {
     sqlite3_stmt *statement;
     sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM users WHERE user_id = ?",
@@ -72,9 +80,9 @@ bool Database::exist_user(const std::string &user_id)
 }
 
 bool Database::add_user(
-    const std::string &user_id,
-    const std::string &username,
-    const std::string &password_hash)
+    const string &user_id,
+    const string &username,
+    const string &password_hash)
 {
     sqlite3_stmt *statement;
     const char *sql = "INSERT INTO users(user_id, username, password_hash) VALUES(?, ?, ?)";
@@ -90,7 +98,7 @@ bool Database::add_user(
     return flag == SQLITE_DONE;
 }
 
-string Database::get_username(const std::string &user_id)
+string Database::get_username(const string &user_id)
 {
     sqlite3_stmt *statement;
     sqlite3_prepare_v2(db, "SELECT username FROM users WHERE user_id = ?",
@@ -108,14 +116,6 @@ string Database::get_username(const std::string &user_id)
 
     sqlite3_finalize(statement);
     return result;
-}
-
-Database::~Database()
-{
-    if (db)
-    {
-        sqlite3_close(db);
-    }
 }
 
 string Database::get_password_hash(const string &user_id)
@@ -136,4 +136,165 @@ string Database::get_password_hash(const string &user_id)
 
     sqlite3_finalize(statement);
     return result;
+}
+
+bool Database::add_message(
+    const string &user_id,
+    const string &chat_id,
+    const string &message_id,
+    const string &message)
+{
+    sqlite3_stmt *statement;
+    const char *sql = "INSERT INTO messages(message_id, chat_id, sender_id, content) VALUES(?, ?, ?, ?)";
+    sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
+
+    sqlite3_bind_text(statement, 1, message_id.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 2, chat_id.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 3, user_id.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 4, message.c_str(), -1, SQLITE_TRANSIENT);
+
+    int flag = sqlite3_step(statement);
+    sqlite3_finalize(statement);
+
+    return flag == SQLITE_DONE;
+}
+
+bool Database::delete_message(const string &message_id)
+{
+    sqlite3_stmt *statement;
+    const char *sql = "DELETE FROM messages WHERE message_id = ?";
+    sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
+
+    sqlite3_bind_text(statement, 1, message_id.c_str(), -1, SQLITE_TRANSIENT);
+
+    int flag = sqlite3_step(statement);
+    sqlite3_finalize(statement);
+
+    return flag == SQLITE_DONE;
+}
+
+bool Database::chat_exist(const string &chat_id)
+{
+    sqlite3_stmt *statement;
+    sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM chats WHERE chat_id = ?",
+                       -1, &statement, nullptr);
+
+    sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
+
+    int count = 0;
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        count = sqlite3_column_int(statement, 0);
+    }
+
+    sqlite3_finalize(statement);
+    return count;
+}
+
+vector<ChatInfo> Database::list_user_chats(const string &user_id)
+{
+    sqlite3_stmt *statement;
+    const char *sql[] =
+        {"SELECT cm.chat_id, cm.role, c.chatname"
+         "FROM chat_members cm"
+         "JOIN chats c ON cm.chat_id = c.chat_id"
+         "WHERE cm.user_id = ? "
+         "ORDER BY m.sent_at ASC;"};
+
+    sqlite3_bind_text(statement, 1, user_id.c_str(), -1, SQLITE_TRANSIENT);
+
+    vector<ChatInfo> chats;
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        ChatInfo chat_info;
+        chat_info.chat_id = reinterpret_cast<const char *>(sqlite3_column_text(statement, 0));
+        chat_info.role = reinterpret_cast<const char *>(sqlite3_column_text(statement, 1));
+        chat_info.chatname = reinterpret_cast<const char *>(sqlite3_column_text(statement, 2));
+
+        chats.push_back(chat_info);
+    }
+    return chats;
+}
+
+vector<Message> Database::fetch_chat_messages(const string &chat_id)
+{
+    sqlite3_stmt *statement;
+    const char *sql[] =
+        {"SELECT m.message_id, m.sender_id,"
+         "m.content, m.sent_at, u.username"
+         "FROM messages m"
+         "JOIN users u ON m.sender_id = u.user_id"
+         "WHERE m.chat_id = ? "
+         "ORDER BY m.sent_at ASC;"};
+
+    sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
+
+    vector<Message> messages;
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        Message message;
+        message.message_id = reinterpret_cast<const char *>(sqlite3_column_text(statement, 0));
+        message.user_id = reinterpret_cast<const char *>(sqlite3_column_text(statement, 1));
+        message.content = reinterpret_cast<const char *>(sqlite3_column_text(statement, 2));
+        message.timestamp = reinterpret_cast<const char *>(sqlite3_column_text(statement, 3));
+        message.username = reinterpret_cast<const char *>(sqlite3_column_text(statement, 4));
+
+        messages.push_back(message);
+    }
+    return messages;
+}
+
+bool Database::add_chat(
+    const std::string &user_id,
+    const std::string &chat_id,
+    const std::string &chatname)
+{
+    sqlite3_stmt *statement;
+    const char *sql = "INSERT INTO chats(chat_id, chatname, creator_id) VALUES(?, ?, ?)";
+    sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
+
+    sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 2, chatname.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 3, user_id.c_str(), -1, SQLITE_TRANSIENT);
+
+    int flag = sqlite3_step(statement);
+    sqlite3_finalize(statement);
+
+    return flag == SQLITE_DONE;
+}
+
+bool Database::add_chat_member(
+    const std::string &user_id,
+    const std::string &chat_id,
+    const string &role)
+{
+    sqlite3_stmt *statement;
+    const char *sql = "INSERT INTO chat_members(chat_id, user_id, role) VALUES(?, ?, ?)";
+    sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
+
+    sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 2, user_id.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 3, role.c_str(), -1, SQLITE_TRANSIENT);
+
+    int flag = sqlite3_step(statement);
+    sqlite3_finalize(statement);
+
+    return flag == SQLITE_DONE;
+}
+
+bool Database::leave_chat(
+    const std::string &user_id,
+    const std::string &chat_id)
+{
+    sqlite3_stmt *statement;
+    const char *sql = "DELETE FROM chat_members WHERE user_id = ? AND chat_id = ?";
+    sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
+
+    sqlite3_bind_text(statement, 1, user_id.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
+
+    int flag = sqlite3_step(statement);
+    sqlite3_finalize(statement);
+
+    return flag == SQLITE_DONE;
 }
