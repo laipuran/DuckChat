@@ -4,7 +4,7 @@
 
 # 编译器设置
 CXX="g++"
-CXXFLAGS="-g3 -O0 -std=c++17 -Wall -Wextra"
+CXXFLAGS="-g3 -O0 -std=c++17 -Wall -Wextra -pthread"
 
 # 包含路径
 INCLUDES="-I$(dirname "$0")/common -I$(dirname "$0")/third_party -I$(dirname "$0")/server"
@@ -14,8 +14,11 @@ OPENSSL_LIBS="-lssl -lcrypto"
 SQLITE_LIBS="-lsqlite3"
 NCURSES_LIBS="-lncurses"
 
+# 网络库（Linux系统）
+NETWORK_LIBS="-lpthread"
+
 # 组合库配置
-THIRD_PARTY_LIBS="$OPENSSL_LIBS $SQLITE_LIBS $NCURSES_LIBS"
+THIRD_PARTY_LIBS="$OPENSSL_LIBS $SQLITE_LIBS $NCURSES_LIBS $NETWORK_LIBS"
 
 # 输出文件路径
 SERVER_OUTPUT="$(dirname "$0")/server/server"
