@@ -5,13 +5,6 @@
 
 using namespace std;
 
-Message::Message() {}
-
-Message::Message(const ClientPacket &packet, const string &timestamp)
-    : message_id(packet.message_id), user_id(packet.user_id),
-      username(packet.username), content(packet.message),
-      timestamp(timestamp) {};
-
 Database::Database(const string &db_path)
 {
     int status = sqlite3_open(db_path.data(), &db);
@@ -54,9 +47,7 @@ Database::Database(const string &db_path)
 
     for (const char *sql : create_tables_sql)
     {
-        int result = sqlite3_exec(db, sql, nullptr, nullptr, nullptr);
-        // if (result != SQLITE_DONE)
-        //     log(LogLevel::ERROR, "Initiating database failed!");
+        sqlite3_exec(db, sql, nullptr, nullptr, nullptr);
     }
 }
 
@@ -201,12 +192,12 @@ bool Database::chat_exist(const string &chat_id)
 vector<ChatInfo> Database::list_user_chats(const string &user_id)
 {
     sqlite3_stmt *statement;
-    const char *sql[] =
+    const char *sql =
         {"SELECT cm.chat_id, cm.role, c.chatname"
          "FROM chat_members cm"
          "JOIN chats c ON cm.chat_id = c.chat_id"
          "WHERE cm.user_id = ? "};
-
+    sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
     sqlite3_bind_text(statement, 1, user_id.c_str(), -1, SQLITE_TRANSIENT);
 
     vector<ChatInfo> chats;
@@ -225,7 +216,7 @@ vector<ChatInfo> Database::list_user_chats(const string &user_id)
 vector<Message> Database::fetch_chat_messages(const string &chat_id)
 {
     sqlite3_stmt *statement;
-    const char *sql[] =
+    const char *sql =
         {"SELECT m.message_id, m.sender_id,"
          "m.content, m.sent_at, u.username"
          "FROM messages m"
@@ -233,6 +224,7 @@ vector<Message> Database::fetch_chat_messages(const string &chat_id)
          "WHERE m.chat_id = ? "
          "ORDER BY m.sent_at ASC;"};
 
+    sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
     sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
 
     vector<Message> messages;

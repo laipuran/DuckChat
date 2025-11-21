@@ -2,25 +2,7 @@
 #include <cstring>
 #include <sqlite3.h>
 #include "../common/protocal.hpp"
-
-struct ChatInfo
-{
-    std::string chat_id;
-    std::string role;
-    std::string chatname;
-};
-
-struct Message
-{
-    std::string message_id;
-    std::string user_id;
-    std::string username;
-    std::string content;
-    std::string timestamp;
-
-    Message();
-    Message(const ClientPacket &packet, const std::string &timestamp);
-};
+#include"../common/protocal.hpp"
 
 class Database
 {

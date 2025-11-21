@@ -1,8 +1,18 @@
 #pragma once
 #include "../third_party/json.hpp"
-#include <cstring>
 #include <vector>
+#include <string>
 using Json = nlohmann::json;
+
+struct ChatInfo
+{
+    std::string chat_id;
+    std::string role;
+    std::string chatname;
+    
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ChatInfo, chat_id, role, chatname);
+
+};
 
 enum class ClientMessage
 {
@@ -51,6 +61,19 @@ struct ClientPacket
         ClientPacket, request,
         username, password_hash, user_id,
         chat_id, chatname, message_id, message)
+};
+
+struct Message
+{
+    std::string message_id;
+    std::string user_id;
+    std::string username;
+    std::string content;
+    std::string timestamp;
+
+    Message();
+    Message(const ClientPacket &packet, const std::string &timestamp);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Message, message_id, user_id, username, content, timestamp);
 };
 
 enum class ServerMessage
