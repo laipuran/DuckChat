@@ -59,7 +59,11 @@ enum class ServerMessage
     LOGIN_RESPONSE,
     CREATE_CHAT_RESPONSE,
     JOIN_CHAT_RESPONSE,
-    RETURN_MESSAGES
+
+    RETURN_CHATS,
+    RETURN_MESSAGES,
+
+    NEW_MESSAGE
 };
 
 enum class ServerStatus
@@ -68,7 +72,7 @@ enum class ServerStatus
     USER_NOT_FOUND,
     INVALID_PASSWORD,
 
-    User_EXISTS,
+    USER_EXISTS,
 
     CHAT_NOT_FOUND,
 
@@ -84,7 +88,7 @@ struct ServerPacket
     std::string username;
     std::string chat_id;
     std::string chatname;
-    std::vector<ClientPacket> message_list;
+    std::vector<Message> message_list;
 
     NLOHMANN_JSON_SERIALIZE_ENUM(
         ServerMessage,
@@ -93,7 +97,10 @@ struct ServerPacket
             {ServerMessage::LOGIN_RESPONSE, "LOGIN_RESPONSE"},
             {ServerMessage::CREATE_CHAT_RESPONSE, "CREATE_CHAT_RESPONSE"},
             {ServerMessage::JOIN_CHAT_RESPONSE, "JOIN_CHAT_RESPONSE"},
+            {ServerMessage::RETURN_CHATS, "RETURN_CHATS"},
             {ServerMessage::RETURN_MESSAGES, "RETURN_MESSAGES"},
+            {ServerMessage::NEW_MESSAGE, "NEW_MESSAGE"},
+
         })
     NLOHMANN_JSON_SERIALIZE_ENUM(
         ServerStatus,
@@ -101,7 +108,7 @@ struct ServerPacket
             {ServerStatus::SUCCESS, "SUCCESS"},
             {ServerStatus::USER_NOT_FOUND, "USER_NOT_FOUND"},
             {ServerStatus::INVALID_PASSWORD, "INVALID_PASSWORD"},
-            {ServerStatus::User_EXISTS, "USER_EXISTS"},
+            {ServerStatus::USER_EXISTS, "USER_EXISTS"},
             {ServerStatus::CHAT_NOT_FOUND, "CHAT_NOT_FOUND"},
             {ServerStatus::CHAT_EXISTS, "CHAT_EXISTS"},
         })
