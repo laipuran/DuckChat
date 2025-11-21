@@ -9,7 +9,7 @@ class SessionManager
 private:
     Database database;
     std::mutex sessions_mutex;
-    std::vector<std::unique_ptr<Session>> sessions;
+    std::unordered_map<int, std::unique_ptr<Session>> sessions;
 
 public:
     SessionManager();

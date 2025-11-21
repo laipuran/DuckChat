@@ -1,5 +1,7 @@
 #include <thread>
 #include <memory>
+#include <unistd.h>
+#include "log_helper.hpp"
 #include "session_manager.hpp"
 
 using namespace std;
@@ -12,17 +14,25 @@ void SessionManager::create_and_start_session(int socket)
     unique_ptr<Session> session(new Session(socket, this));
     Session *session_ptr = session.get();
 
-    this->sessions.push_back(move(session));
+    sessions[socket] = move(session);
     thread new_session_thread(&Session::handle_session, session_ptr);
     new_session_thread.detach();
 }
 
 void SessionManager::close_session(int socket)
 {
-    // TODO: 实现会话关闭逻辑
-    (void)socket; // 避免未使用参数警告
+    lock_guard<mutex> lock(sessions_mutex);
+
+    auto it = sessions.find(socket);
+    if (it != sessions.end())
+    {
+        log(LogLevel::INFO, "Session closed for: " + it->second->user_id);
+        sessions.erase(it);
+        close(socket);
+    }
 }
 
-Database* SessionManager::get_database(){
+Database *SessionManager::get_database()
+{
     return &database;
 }
