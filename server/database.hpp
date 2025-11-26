@@ -33,6 +33,8 @@ public:
 
     bool chat_exist(const std::string &chat_id);
 
+    std::string get_chatname(const std::string chat_id);
+
     std::vector<ChatInfo> list_user_chats(
         const std::string &user_id);
 

@@ -189,6 +189,26 @@ bool Database::chat_exist(const string &chat_id)
     return count;
 }
 
+std::string Database::get_chatname(const std::string chat_id)
+{
+    sqlite3_stmt *statement;
+    sqlite3_prepare_v2(db, "SELECT chatname FROM chats WHERE chat_id = ?",
+                       -1, &statement, nullptr);
+
+    sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
+
+    string result;
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        const u_char *chatname = sqlite3_column_text(statement, 0);
+        if (chatname != nullptr)
+            result = reinterpret_cast<const char *>(chatname);
+    }
+
+    sqlite3_finalize(statement);
+    return result;
+}
+
 vector<ChatInfo> Database::list_user_chats(const string &user_id)
 {
     sqlite3_stmt *statement;
@@ -201,7 +221,7 @@ vector<ChatInfo> Database::list_user_chats(const string &user_id)
     sqlite3_bind_text(statement, 1, user_id.c_str(), -1, SQLITE_TRANSIENT);
 
     vector<ChatInfo> chats;
-    if (sqlite3_step(statement) == SQLITE_ROW)
+    while (sqlite3_step(statement) == SQLITE_ROW)
     {
         ChatInfo chat_info;
         chat_info.chat_id = reinterpret_cast<const char *>(sqlite3_column_text(statement, 0));
@@ -228,7 +248,7 @@ vector<Message> Database::fetch_chat_messages(const string &chat_id)
     sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
 
     vector<Message> messages;
-    if (sqlite3_step(statement) == SQLITE_ROW)
+    while (sqlite3_step(statement) == SQLITE_ROW)
     {
         Message message;
         message.message_id = reinterpret_cast<const char *>(sqlite3_column_text(statement, 0));

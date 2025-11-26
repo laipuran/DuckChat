@@ -111,6 +111,7 @@ struct ServerPacket
     std::string username;
     std::string chat_id;
     std::string chatname;
+    std::vector<ChatInfo> chats;
     std::vector<Message> message_list;
 
     NLOHMANN_JSON_SERIALIZE_ENUM(
@@ -138,5 +139,5 @@ struct ServerPacket
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(
         ServerPacket, request, status,
         user_id, username, chat_id,
-        chatname, message_list)
+        chatname, chats, message_list)
 };
