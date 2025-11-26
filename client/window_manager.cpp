@@ -43,24 +43,24 @@ void WindowManager::handle_input()
 {
     while (true)
     {
-        char ch = wgetch(stdscr);
+        char ch = getch();
         switch (ch)
         {
         case 'q':
-            printw("Triggering Exit");
+            printf("Triggering Exit");
             return;
             break;
         case 'm':
         {
             char message[256];
-            scanw("%[^\n]", message);
+            scanf("%[^\n]", message);
             chat_manager->add_message(string(message));
             break;
         }
         case ':':
         {
             char command_line[256];
-            scanw("%[^\n]", command_line);
+            scanf("%[^\n]", command_line);
             
             string cmd_str = string(command_line);
             istringstream iss(cmd_str);
@@ -121,7 +121,7 @@ void WindowManager::render_chat_history(const std::vector<Message> &messages)
 void WindowManager::render_new_message(const Message &message)
 {
     string out_str = message.username + ":" + message.content;
-    printw("%s", out_str.c_str());
+    printf("%s", out_str.c_str());
 }
 
 void WindowManager::render_chats(const std::vector<ChatInfo> &chats)
@@ -135,5 +135,5 @@ void WindowManager::render_chats(const std::vector<ChatInfo> &chats)
 void WindowManager::render_new_chat(const ChatInfo &chat_info)
 {
     string out_str = chat_info.chatname;
-    printw("%s", out_str.c_str());
+    printf("%s", out_str.c_str());
 }

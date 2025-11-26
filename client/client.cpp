@@ -48,82 +48,84 @@ int main()
     ServerPacket received_packet;
 
 #pragma region
-    // while (true)
-    // {
-    //     int op;
-    //     cout << "Register(0) or Login(1):" << endl;
-    //     cin >> op;
-    //     cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    //     if (op == 0)
-    //     {
-    //         string user_id, username, password;
-    //         cout << "Input user id:" << endl;
-    //         getline(cin, user_id);
-    //         cout << "Input username:" << endl;
-    //         getline(cin, username);
-    //         cout << "Input password:" << endl;
-    //         getline(cin, password);
-
-    //         ClientPacket packet;
-    //         packet.request = ClientMessage::REGISTER;
-    //         packet.user_id = user_id;
-    //         packet.username = username;
-    //         packet.password_hash = sha256(password);
-
-    //         send_packet(server_fd, packet);
-
-    //         received_packet = recv_server_packet(server_fd);
-    //         if (received_packet.status == ServerStatus::SUCCESS)
-    //         {
-    //             cout << "Register success" << endl;
-    //             // break;
-    //         }
-    //     }
-    //     else if (op == 1)
-    //     {
-    //         string user_id, password;
-    //         cout << "Input user id:" << endl;
-    //         getline(cin, user_id);
-    //         cout << "Input password:" << endl;
-    //         getline(cin, password);
-
-    //         ClientPacket packet;
-    //         packet.request = ClientMessage::LOGIN;
-    //         packet.user_id = user_id;
-    //         packet.password_hash = sha256(password);
-
-    //         send_packet(server_fd, packet);
-
-    //         received_packet = recv_server_packet(server_fd);
-    //         if (received_packet.status == ServerStatus::SUCCESS)
-    //         {
-    //             cout << "Login success" << endl;
-    //             break;
-    //         }
-    //     }
-    // }
-#pragma endregion
-#pragma region Skipping Login
-    ClientPacket packet;
-    packet.request = ClientMessage::LOGIN;
-    packet.user_id = "duck";
-    packet.password_hash = sha256("duck");
-
-    send_packet(server_fd, packet);
-
-    received_packet = recv_server_packet(server_fd);
-    if (received_packet.status == ServerStatus::SUCCESS)
+    while (true)
     {
-        cout << "Login success" << endl;
+        int op;
+        cout << "Register(0) or Login(1):" << endl;
+        cin >> op;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        if (op == 0)
+        {
+            string user_id, username, password;
+            cout << "Input user id:" << endl;
+            getline(cin, user_id);
+            cout << "Input username:" << endl;
+            getline(cin, username);
+            cout << "Input password:" << endl;
+            getline(cin, password);
+
+            ClientPacket packet;
+            packet.request = ClientMessage::REGISTER;
+            packet.user_id = user_id;
+            packet.username = username;
+            packet.password_hash = sha256(password);
+
+            send_packet(server_fd, packet);
+
+            received_packet = recv_server_packet(server_fd);
+            if (received_packet.status == ServerStatus::SUCCESS)
+            {
+                cout << "Register success" << endl;
+                break;
+            }
+        }
+        else if (op == 1)
+        {
+            string user_id, password;
+            cout << "Input user id:" << endl;
+            getline(cin, user_id);
+            cout << "Input password:" << endl;
+            getline(cin, password);
+
+            ClientPacket packet;
+            packet.request = ClientMessage::LOGIN;
+            packet.user_id = user_id;
+            packet.password_hash = sha256(password);
+
+            send_packet(server_fd, packet);
+
+            received_packet = recv_server_packet(server_fd);
+            if (received_packet.status == ServerStatus::SUCCESS)
+            {
+                cout << "Login success" << endl;
+                break;
+            }
+        }
     }
+#pragma endregion
+#pragma region
+    // #pragma region Skipping Login
+    //     ClientPacket packet;
+    //     packet.request = ClientMessage::LOGIN;
+    //     packet.user_id = "duck";
+    //     packet.password_hash = sha256("duck");
+
+    //     send_packet(server_fd, packet);
+
+    //     received_packet = recv_server_packet(server_fd);
+    //     if (received_packet.status == ServerStatus::SUCCESS)
+    //     {
+    //         cout << "Login success" << endl;
+    //     }
 #pragma endregion
 
     thread client_thread_receive(handle_server_receive);
     client_thread_receive.detach();
 
     chat_manager = ChatManager(server_fd, &window_manager, received_packet.user_id, received_packet.username);
+    chat_manager.initiate();
     window_manager.chat_manager = &chat_manager;
-    window_manager.initiate();
+    //window_manager.initiate();
     window_manager.handle_input();
 }
 
