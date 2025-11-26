@@ -102,7 +102,7 @@ ServerPacket recv_server_packet(int socket)
 
     if (result == 0)
     {
-        log(LogLevel::INFO, "Connection closed by client.");
+        log(LogLevel::INFO, "Connection closed by server.");
         return ServerPacket();
     }
     if (result == -1)

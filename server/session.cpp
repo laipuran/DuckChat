@@ -89,6 +89,22 @@ void Session::handle_session()
             send_packet(socket, packet);
             break;
         }
+        case ClientMessage::LIST_CHATS:
+        {
+            ServerPacket packet;
+            packet.request = ServerMessage::RETURN_CHATS;
+            packet.chats = session_manager->get_database()->list_user_chats(received_packet.user_id);
+            send_packet(socket, packet);
+            break;
+        }
+        case ClientMessage::FETCH_MESSAGES:
+        {
+            ServerPacket packet;
+            packet.request = ServerMessage::RETURN_MESSAGES;
+            packet.message_list = session_manager->get_database()->fetch_chat_messages(received_packet.chat_id);
+            send_packet(socket, packet);
+            break;
+        }
         default:
             break;
         }
