@@ -16,7 +16,7 @@ void Session::handle_session()
             break;
         }
         ClientPacket received_packet = recv_client_packet(socket);
-        if (received_packet.request == ClientMessage::REGISTER && received_packet.chat_id == "")
+        if (received_packet.request == ClientMessage::REGISTER && received_packet.user_id == "")
         {
             session_manager->close_session(socket);
             break;

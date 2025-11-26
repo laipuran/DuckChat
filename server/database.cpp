@@ -290,7 +290,7 @@ std::vector<std::string> Database::get_chat_members(const std::string &chat_id)
     sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
 
     vector<string> result;
-    if (sqlite3_step(statement) == SQLITE_ROW)
+    while (sqlite3_step(statement) == SQLITE_ROW)  // 修复：使用while循环读取所有成员
     {
         const u_char *user_id = sqlite3_column_text(statement, 0);
         if (user_id != nullptr)

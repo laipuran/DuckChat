@@ -26,6 +26,8 @@ public:
     ServerStatus handle_register(const ClientPacket &packet);
     ServerStatus handle_new_chat(const ClientPacket &packet, const std::string &uuid);
     ServerStatus handle_join_chat(const ClientPacket &packet);
+    ServerStatus handle_recall_message(const ClientPacket &packet);
+    ServerStatus handle_leave_chat(const ClientPacket &packet);
 
     void handle_message(const ClientPacket &packet);
 };
