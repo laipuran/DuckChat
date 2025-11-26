@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include"database.hpp"
+#include "database.hpp"
 #include "../common/protocal.hpp"
 #include "../common/network.hpp"
 
@@ -21,6 +21,11 @@ public:
     ~Session() = default;
 
     void handle_session();
-    ServerStatus handle_login(const ClientPacket &packet,  Session& session);
-    ServerStatus handle_register(const ClientPacket &packet,  Session& session);
+
+    ServerStatus handle_login(const ClientPacket &packet);
+    ServerStatus handle_register(const ClientPacket &packet);
+    ServerStatus handle_new_chat(const ClientPacket &packet, const std::string &uuid);
+    ServerStatus handle_join_chat(const ClientPacket &packet);
+
+    void handle_message(const ClientPacket &packet);
 };
