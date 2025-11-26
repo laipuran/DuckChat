@@ -26,6 +26,17 @@ std::vector<Message> Chat::get_messages()
     return messages;
 }
 
+void ChatManager::initiate()
+{
+    ClientPacket chats_request;
+    chats_request.request = ClientMessage::LIST_CHATS;
+    chats_request.user_id = current_user_id;
+    send_packet(server_sock, chats_request);
+
+    ServerPacket chats_packet = recv_server_packet(server_sock);
+    handle_chat_lists(chats_packet);
+}
+
 void ChatManager::handle_chat_lists(const ServerPacket &packet)
 {
     chat_list = packet.chats;
@@ -46,7 +57,7 @@ void ChatManager::add_message(const std::string &message)
     packet.chat_id = current_chat_id;
     packet.message = message;
     packet.username = current_username;
-    // packet.message_id
+    packet.message_id = Utils::get_uuid();
 
     send_packet(server_sock, packet);
     window_manager->render_new_message(Message(packet, Utils::get_iso_timestamp()));

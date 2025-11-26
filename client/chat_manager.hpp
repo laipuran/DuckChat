@@ -34,6 +34,7 @@ public:
     ChatManager(int server_sock, WindowManager *window_manager, std::string user_id, std::string username)
         : server_sock(server_sock), window_manager(window_manager), current_user_id(user_id), current_username(username) {};
     ChatManager() {};
+    void initiate();
 
     void handle_chat_lists(const ServerPacket &packet);
     void handle_chat_history(const ServerPacket &packet);
