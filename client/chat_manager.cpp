@@ -67,6 +67,10 @@ void ChatManager::handle_new_message(const ServerPacket &packet)
 {
     if (packet.status == ServerStatus::SUCCESS)
     {
+        // 检查message_list是否为空，避免数组越界访问
+        if (packet.message_list.empty()) {
+            return;
+        }
         current_chat.add_message(packet.message_list[0]);
         current_chat_id = packet.chat_id;
         window_manager->render_new_message(packet.message_list[0]);
@@ -75,7 +79,23 @@ void ChatManager::handle_new_message(const ServerPacket &packet)
 
 void ChatManager::handle_new_chat(const ServerPacket &packet)
 {
+    // 检查chats向量是否为空，避免数组越界访问
+    if (packet.chats.empty()) {
+        // 如果chats为空但从服务器返回了有效的chat信息，手动创建ChatInfo
+        if (!packet.chat_id.empty() && !packet.chatname.empty()) {
+            ChatInfo new_chat;
+            new_chat.chat_id = packet.chat_id;
+            new_chat.chatname = packet.chatname;
+            new_chat.role = "member"; // 默认角色
+            current_chat_id = packet.chat_id;
+            chat_list.push_back(new_chat);
+            window_manager->render_new_chat(new_chat);
+        }
+        return;
+    }
+    
     chat_list.push_back(packet.chats[0]);
+    current_chat_id = packet.chat_id;
     window_manager->render_new_chat(packet.chats[0]);
 }
 
