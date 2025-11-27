@@ -73,7 +73,7 @@ int main()
             send_packet(server_fd, packet);
 
             received_packet = recv_server_packet(server_fd);
-            if (received_packet.status == ServerStatus::SUCCESS)
+            if (received_packet.status == ServerStatus::SUCCESS && received_packet.user_id!="")
             {
                 cout << "Register success" << endl;
                 break;
@@ -95,7 +95,7 @@ int main()
             send_packet(server_fd, packet);
 
             received_packet = recv_server_packet(server_fd);
-            if (received_packet.status == ServerStatus::SUCCESS)
+            if (received_packet.status == ServerStatus::SUCCESS&& received_packet.user_id!="")
             {
                 cout << "Login success" << endl;
                 break;
@@ -126,7 +126,8 @@ int main()
     chat_manager.initiate();
     window_manager.chat_manager = &chat_manager;
     //window_manager.initiate();
-    window_manager.handle_input();
+    // 不使用ncurses界面，直接使用标准输入输出
+    window_manager.handle_simple_input();
 }
 
 string sha256(const std::string &str)
@@ -167,6 +168,8 @@ void handle_server_receive()
             chat_manager.handle_chat_history(packet);
             break;
         case ServerMessage::JOIN_CHAT_RESPONSE:
+            chat_manager.handle_new_chat(packet);
+            break;
         case ServerMessage::CREATE_CHAT_RESPONSE:
             chat_manager.handle_new_chat(packet);
             break;

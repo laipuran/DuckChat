@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string>
 #include <ncurses.h>
+#include <iostream>
 
 using namespace std;
 
@@ -90,6 +91,52 @@ void WindowManager::handle_input()
     endwin();
 }
 
+void WindowManager::handle_simple_input()
+{
+    while (true)
+    {
+        cout << "\n请输入命令 (':cc 名称'创建群聊, ':jc ID'加入群聊, ':m'发送消息, 'q'退出): " << flush;
+        
+        string input;
+        getline(cin, input);
+        
+        if (input.empty()) {
+            continue;
+        }
+        
+        if (input == "q") {
+            cout << "退出程序..." << endl;
+            return;
+        }
+        else if (input == ":m") {
+            cout << "请输入消息内容: " << flush;
+            string message;
+            getline(cin, message);
+            if (chat_manager) {
+                chat_manager->add_message(message);
+            }
+        }
+        else if (input.find(":cc ") == 0) {
+            string chatname = input.substr(4); // 去掉 ":cc "
+            if (chat_manager) {
+                chat_manager->create_chat(chatname);
+            }
+        }
+        else if (input.find(":jc ") == 0) {
+            string chat_id = input.substr(4); // 去掉 ":jc "
+            if (chat_manager) {
+                chat_manager->join_chat(chat_id);
+            }
+        }
+        else {
+            // 直接发送消息
+            if (chat_manager) {
+                chat_manager->add_message(input);
+            }
+        }
+    }
+}
+
 void WindowManager::refresh_windows()
 {
     if (chat_list_window)
@@ -121,7 +168,7 @@ void WindowManager::render_chat_history(const std::vector<Message> &messages)
 void WindowManager::render_new_message(const Message &message)
 {
     string out_str = message.username + ":" + message.content;
-    printf("%s", out_str.c_str());
+    cout<<out_str<<endl;
 }
 
 void WindowManager::render_chats(const std::vector<ChatInfo> &chats)

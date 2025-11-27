@@ -31,6 +31,7 @@ public:
 
     void initiate();
     void handle_input();
+    void handle_simple_input();
     void send_message(const ClientPacket &packet);
     void refresh_windows();
 

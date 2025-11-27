@@ -36,3 +36,16 @@ Database *SessionManager::get_database()
 {
     return &database;
 }
+
+int SessionManager::get_socket_by_user_id(const std::string &user_id)
+{
+    lock_guard<mutex> lock(sessions_mutex);
+    
+    for (const auto& pair : sessions) {
+        if (pair.second->user_id == user_id) {
+            return pair.first;
+        }
+    }
+    
+    return -1; // 未找到对应的socket
+}

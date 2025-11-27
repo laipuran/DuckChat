@@ -17,4 +17,5 @@ public:
     void create_and_start_session(int socket);
     void close_session(int socket);
     Database *get_database();
+    int get_socket_by_user_id(const std::string &user_id);
 };
