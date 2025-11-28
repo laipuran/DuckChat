@@ -213,9 +213,9 @@ vector<ChatInfo> Database::list_user_chats(const string &user_id)
 {
     sqlite3_stmt *statement;
     const char *sql =
-        {"SELECT cm.chat_id, cm.role, c.chatname"
-         "FROM chat_members cm"
-         "JOIN chats c ON cm.chat_id = c.chat_id"
+        {"SELECT cm.chat_id, cm.role, c.chatname "
+         "FROM chat_members cm "
+         "JOIN chats c ON cm.chat_id = c.chat_id "
          "WHERE cm.user_id = ? "};
     sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
     sqlite3_bind_text(statement, 1, user_id.c_str(), -1, SQLITE_TRANSIENT);
@@ -237,10 +237,10 @@ vector<Message> Database::fetch_chat_messages(const string &chat_id)
 {
     sqlite3_stmt *statement;
     const char *sql =
-        {"SELECT m.message_id, m.sender_id,"
-         "m.content, m.sent_at, u.username"
-         "FROM messages m"
-         "JOIN users u ON m.sender_id = u.user_id"
+        {"SELECT m.message_id, m.sender_id, "
+         "m.content, m.sent_at, u.username "
+         "FROM messages m "
+         "JOIN users u ON m.sender_id = u.user_id "
          "WHERE m.chat_id = ? "
          "ORDER BY m.sent_at ASC;"};
 

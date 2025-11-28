@@ -48,4 +48,8 @@ public:
 
     void add_message(const std::string &message);
     void recall_message(const std::string &message_id);
+    
+    // 访问器方法
+    std::vector<Message> get_current_chat_messages();
+    std::vector<ChatInfo> get_chat_list();
 };

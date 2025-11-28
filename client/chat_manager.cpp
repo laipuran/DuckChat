@@ -108,6 +108,25 @@ void ChatManager::create_chat(const std::string &chatname)
     send_packet(server_sock, packet);
 }
 
+void ChatManager::leave_chat(const std::string &chat_id)
+{
+    ClientPacket packet;
+    packet.request = ClientMessage::LEAVE_CHAT;
+    packet.chat_id = chat_id.empty() ? current_chat_id : chat_id;
+    packet.user_id = current_user_id;
+    send_packet(server_sock, packet);
+}
+
+void ChatManager::recall_message(const std::string &message_id)
+{
+    ClientPacket packet;
+    packet.request = ClientMessage::RECALL;
+    packet.user_id = current_user_id;
+    packet.message_id = message_id;
+    packet.chat_id = current_chat_id;
+    send_packet(server_sock, packet);
+}
+
 void ChatManager::join_chat(const string &chat_id)
 {
     ClientPacket packet;
@@ -115,4 +134,14 @@ void ChatManager::join_chat(const string &chat_id)
     packet.chat_id = chat_id;
     packet.user_id = current_user_id;
     send_packet(server_sock, packet);
+}
+
+std::vector<Message> ChatManager::get_current_chat_messages()
+{
+    return current_chat.get_messages();
+}
+
+std::vector<ChatInfo> ChatManager::get_chat_list()
+{
+    return chat_list;
 }
