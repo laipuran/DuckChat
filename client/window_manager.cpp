@@ -3,17 +3,20 @@
 #include <sstream>
 #include <unistd.h>
 #include <string>
-#include <ncurses.h>
+#include <ncursesw/ncurses.h>
 #include <iostream>
 
 using namespace std;
 
 void WindowManager::initiate()
 {
-    // 初始化 ncurses
+    // 设置locale以支持UTF-8
+    setlocale(LC_ALL, "zh_CN.UTF-8");
+    
+    // 初始化 ncursesw (宽字符版本)
     initscr();
     cbreak();
-    // noecho();
+    noecho();
     keypad(stdscr, TRUE);
 
     int scr_line, scr_col;
