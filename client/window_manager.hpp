@@ -57,7 +57,6 @@ public:
 
     void render_chat_history(const std::vector<Message> &messages);
     void render_chats(const std::vector<ChatInfo> &chats);
-    void render_new_chat(const ChatInfo &chat_info);
     
     // 输入处理改进
     std::string get_input();

@@ -547,32 +547,3 @@ std::string WindowManager::get_input()
     
     return string(buffer);
 }
-
-void WindowManager::render_new_chat(const ChatInfo &chat_info)
-{
-    if (!chat_list_window) return;
-    
-    // 获取当前窗口内容
-    int max_x = getmaxx(chat_list_window);
-    
-    // 清空并重绘窗口
-    werase(chat_list_window);
-    box(chat_list_window, '|', '-');
-    mvwprintw(chat_list_window, 0, 2, "聊天列表");
-    
-    // 格式化聊天信息
-    string display_line = chat_info.chatname;
-    
-    // 限制显示长度
-    if ((int)display_line.length() > max_x - 4) {
-        display_line = display_line.substr(0, max_x - 7) + "...";
-    }
-    
-    // 显示新聊天
-    mvwprintw(chat_list_window, 2, 2, "%s", display_line.c_str());
-    
-    // 重置滚动位置
-    chat_scroll_pos = 0;
-    
-    wrefresh(chat_list_window);
-}
