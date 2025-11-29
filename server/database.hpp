@@ -35,6 +35,8 @@ public:
 
     std::string get_chatname(const std::string chat_id);
 
+    std::string get_role(const std::string& chat_id, const std::string& user_id);
+
     std::vector<ChatInfo> list_user_chats(
         const std::string &user_id);
 

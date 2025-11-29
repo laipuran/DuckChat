@@ -1,5 +1,6 @@
 #include "chat_manager.hpp"
 #include <string>
+#include<iostream>
 #include "../common/network.hpp"
 #include "../common/utils.hpp"
 
@@ -45,8 +46,8 @@ void ChatManager::handle_chat_lists(const ServerPacket &packet)
 
 void ChatManager::handle_chat_history(const ServerPacket &packet)
 {
-    current_chat.messages = packet.message_list;
-    window_manager->render_chat_history(packet.message_list);
+    current_chat.messages = packet.messages;
+    window_manager->render_chat_history(packet.messages);
 }
 
 void ChatManager::add_message(const std::string &message)
@@ -60,7 +61,11 @@ void ChatManager::add_message(const std::string &message)
     packet.message_id = Utils::get_uuid();
 
     send_packet(server_sock, packet);
-    window_manager->render_new_message(Message(packet, Utils::get_iso_timestamp()));
+
+    // 添加消息到本地聊天历史并重新渲染整个聊天历史
+    Message new_message(packet, Utils::get_iso_timestamp());
+    current_chat.add_message(new_message);
+    window_manager->render_chat_history(current_chat.get_messages());
 }
 
 void ChatManager::handle_new_message(const ServerPacket &packet)
@@ -68,35 +73,41 @@ void ChatManager::handle_new_message(const ServerPacket &packet)
     if (packet.status == ServerStatus::SUCCESS)
     {
         // 检查message_list是否为空，避免数组越界访问
-        if (packet.message_list.empty()) {
+        if (packet.messages.empty())
+        {
             return;
         }
-        current_chat.add_message(packet.message_list[0]);
-        current_chat_id = packet.chat_id;
-        window_manager->render_new_message(packet.message_list[0]);
+        Message message = packet.messages[0];
+        if (packet.chats.size() == 0)
+            return;
+        if (packet.chats[0].chat_id != current_chat_id)
+            return;
+        current_chat.add_message(message);
+        current_chat_id = packet.chats[0].chat_id;
+
+        // 重新渲染整个聊天历史，而不是只渲染新消息
+        window_manager->render_chat_history(current_chat.get_messages());
     }
 }
 
 void ChatManager::handle_new_chat(const ServerPacket &packet)
 {
     // 检查chats向量是否为空，避免数组越界访问
-    if (packet.chats.empty()) {
-        // 如果chats为空但从服务器返回了有效的chat信息，手动创建ChatInfo
-        if (!packet.chat_id.empty() && !packet.chatname.empty()) {
-            ChatInfo new_chat;
-            new_chat.chat_id = packet.chat_id;
-            new_chat.chatname = packet.chatname;
-            new_chat.role = "member"; // 默认角色
-            current_chat_id = packet.chat_id;
-            chat_list.push_back(new_chat);
-            window_manager->render_new_chat(new_chat);
-        }
+    if (packet.chats.empty())
         return;
-    }
-    
+
     chat_list.push_back(packet.chats[0]);
-    current_chat_id = packet.chat_id;
+    current_chat_id = packet.chats[0].chat_id;
     window_manager->render_new_chat(packet.chats[0]);
+
+    window_manager->show_status("加入"+current_chat_id+"成功！");
+
+    ClientPacket request_packet;
+    request_packet.request = ClientMessage::FETCH_MESSAGES;
+    request_packet.chat_id = current_chat_id;
+
+    send_packet(server_sock, request_packet);
+    window_manager->render_chats(chat_list);
 }
 
 void ChatManager::create_chat(const std::string &chatname)

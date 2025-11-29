@@ -209,6 +209,27 @@ std::string Database::get_chatname(const std::string chat_id)
     return result;
 }
 
+string Database::get_role(const std::string &chat_id, const std::string &user_id)
+{
+    sqlite3_stmt *statement;
+    const char *sql = "SELECT role FROM chat_members WHERE user_id = ? AND chat_id = ?";
+    sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
+
+    sqlite3_bind_text(statement, 1, user_id.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 2, chat_id.c_str(), -1, SQLITE_TRANSIENT);
+
+    string result;
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        const u_char *role = sqlite3_column_text(statement, 0);
+        if (role != nullptr)
+            result = reinterpret_cast<const char *>(role);
+    }
+
+    sqlite3_finalize(statement);
+    return result;
+}
+
 vector<ChatInfo> Database::list_user_chats(const string &user_id)
 {
     sqlite3_stmt *statement;
@@ -290,7 +311,7 @@ std::vector<std::string> Database::get_chat_members(const std::string &chat_id)
     sqlite3_bind_text(statement, 1, chat_id.c_str(), -1, SQLITE_TRANSIENT);
 
     vector<string> result;
-    while (sqlite3_step(statement) == SQLITE_ROW)  // 修复：使用while循环读取所有成员
+    while (sqlite3_step(statement) == SQLITE_ROW) // 修复：使用while循环读取所有成员
     {
         const u_char *user_id = sqlite3_column_text(statement, 0);
         if (user_id != nullptr)
