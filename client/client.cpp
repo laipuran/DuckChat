@@ -17,6 +17,7 @@
 #include "../third_party/json.hpp"
 #include "../common/protocal.hpp"
 #include "../common/network.hpp"
+#include "../common/log_helper.hpp"
 
 using namespace std;
 using nlohmann::json;
@@ -30,6 +31,8 @@ string sha256(const std::string &str);
 
 int main()
 {
+    log(LogLevel::INFO, "客户端启动");
+    
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     sockaddr_in serv_addr;
     serv_addr.sin_family = AF_INET;
@@ -43,7 +46,7 @@ int main()
             break;
         sleep(1);
     }
-    cout << "Connected" << endl;
+    log(LogLevel::INFO, "已连接到服务器");
 
     ServerPacket received_packet;
 
@@ -51,16 +54,20 @@ int main()
     while (true)
     {
         int op;
+        log(LogLevel::INFO, "Register(0) or Login(1):");
         cout << "Register(0) or Login(1):" << endl;
         cin >> op;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         if (op == 0)
         {
             string user_id, username, password;
+            log(LogLevel::INFO, "Input user id:");
             cout << "Input user id:" << endl;
             getline(cin, user_id);
+            log(LogLevel::INFO, "Input username:");
             cout << "Input username:" << endl;
             getline(cin, username);
+            log(LogLevel::INFO, "Input password:");
             cout << "Input password:" << endl;
             getline(cin, password);
 
@@ -75,6 +82,7 @@ int main()
             received_packet = recv_server_packet(server_fd);
             if (received_packet.status == ServerStatus::SUCCESS && received_packet.user_id!="")
             {
+                log(LogLevel::INFO, "注册成功");
                 cout << "Register success" << endl;
                 break;
             }
@@ -82,8 +90,10 @@ int main()
         else if (op == 1)
         {
             string user_id, password;
+            log(LogLevel::INFO, "Input user id:");
             cout << "Input user id:" << endl;
             getline(cin, user_id);
+            log(LogLevel::INFO, "Input password:");
             cout << "Input password:" << endl;
             getline(cin, password);
 
@@ -97,6 +107,7 @@ int main()
             received_packet = recv_server_packet(server_fd);
             if (received_packet.status == ServerStatus::SUCCESS&& received_packet.user_id!="")
             {
+                log(LogLevel::INFO, "登录成功");
                 cout << "Login success" << endl;
                 break;
             }
@@ -127,6 +138,7 @@ int main()
 
     thread client_thread_receive(handle_server_receive);
     client_thread_receive.detach();
+    
 }
 
 string sha256(const std::string &str)
