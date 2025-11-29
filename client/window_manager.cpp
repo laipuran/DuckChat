@@ -278,12 +278,41 @@ void WindowManager::refresh_windows()
 
 void WindowManager::render_chat_history(const std::vector<Message> &messages)
 {
-    if (!message_window) return;
+    // 验证窗口指针
+    if (!message_window) {
+        return;
+    }
+    
+    // 获取窗口尺寸并验证
+    int max_y = getmaxy(message_window);
+    int max_x = getmaxx(message_window);
+    if (max_y < 4 || max_x < 8) {
+        return;  // 窗口太小，无法显示内容
+    }
+    
+    // 使用常量替代魔法数字
+    const int BORDER_PADDING = 4;
+    const int ELLIPSIS_LENGTH = 3;
+    const int TITLE_ROW = 0;
+    const int CONTENT_START_ROW = 2;
     
     // 清空消息窗口内容区域（保留边框和标题）
     werase(message_window);
     box(message_window, '|', '-');
-    mvwprintw(message_window, 0, 2, "消息");
+    
+    // 使用高亮显示标题
+    wattron(message_window, A_BOLD);
+    mvwprintw(message_window, TITLE_ROW, 2, "消息");
+    wattroff(message_window, A_BOLD);
+    
+    // 如果没有消息，显示提示信息
+    if (messages.empty()) {
+        wattron(message_window, COLOR_PAIR(3));  // 使用青色显示提示
+        mvwprintw(message_window, CONTENT_START_ROW, 2, "(暂无消息)");
+        wattroff(message_window, COLOR_PAIR(3));
+        wrefresh(message_window);
+        return;
+    }
     
     // 计算可见的消息范围
     int start_idx = max(0, (int)messages.size() - max_message_lines - message_scroll_pos);
@@ -293,57 +322,60 @@ void WindowManager::render_chat_history(const std::vector<Message> &messages)
     for (int i = start_idx; i < end_idx; i++)
     {
         const Message& msg = messages[i];
-        string display_line = msg.username + ": " + msg.content;
+        
+        // 格式化消息 - 添加时间戳（如果可用）
+        string time_str = "";
+        if (!msg.timestamp.empty() && msg.timestamp.length() >= 5) {
+            time_str = "[" + msg.timestamp.substr(11, 5) + "] ";  // 只显示时分
+        }
+        string display_line = time_str + msg.username + ": " + msg.content;
         
         // 限制显示长度，防止超出窗口
-        int max_len = getmaxx(message_window) - 4; // 减去边框
+        int max_len = max_x - BORDER_PADDING;
         if ((int)display_line.length() > max_len) {
-            display_line = display_line.substr(0, max_len - 3) + "...";
+            // 确保不会在UTF-8字符中间截断
+            int safe_length = max_len - ELLIPSIS_LENGTH;
+            while (safe_length > 0 && (display_line[safe_length] & 0x80) != 0) {
+                safe_length--;  // 向后移动直到找到完整的UTF-8字符
+            }
+            display_line = display_line.substr(0, safe_length) + "...";
         }
         
-        mvwprintw(message_window, i - start_idx + 2, 2, "%s", display_line.c_str());
+        // 检查是否是最新消息（如果是，使用不同颜色高亮）
+        bool is_latest = (i == (int)messages.size() - 1) && (message_scroll_pos == 0);
+        if (is_latest) {
+            wattron(message_window, COLOR_PAIR(2));  // 使用绿色表示最新消息
+        }
+        
+        mvwprintw(message_window, i - start_idx + CONTENT_START_ROW, 2, "%s", display_line.c_str());
+        
+        if (is_latest) {
+            wattroff(message_window, COLOR_PAIR(2));
+        }
     }
     
     // 显示滚动指示器
     if (message_scroll_pos > 0) {
-        mvwprintw(message_window, 1, getmaxx(message_window) - 5, "▲");
+        wattron(message_window, COLOR_PAIR(3));  // 使用青色显示滚动指示器
+        mvwprintw(message_window, 1, max_x - 5, "▲");
+        wattroff(message_window, COLOR_PAIR(3));
     }
     if (end_idx < (int)messages.size()) {
-        mvwprintw(message_window, getmaxy(message_window) - 2, getmaxx(message_window) - 5, "▼");
+        wattron(message_window, COLOR_PAIR(3));
+        mvwprintw(message_window, max_y - 2, max_x - 5, "▼");
+        wattroff(message_window, COLOR_PAIR(3));
+    }
+    
+    // 如果有新消息且滚动位置在底部，显示新消息指示器
+    if (message_scroll_pos == 0 && !messages.empty()) {
+        wattron(message_window, COLOR_PAIR(2) | A_BOLD);  // 绿色加粗
+        mvwprintw(message_window, max_y - 2, max_x - 10, "[新消息]");
+        wattroff(message_window, COLOR_PAIR(2) | A_BOLD);
     }
     
     wrefresh(message_window);
 }
 
-void WindowManager::render_new_message(const Message &message)
-{
-    if (!message_window) return;
-    
-    // 获取当前窗口内容
-    int max_y = getmaxy(message_window);
-    int max_x = getmaxx(message_window);
-    
-    // 清空并重绘窗口
-    werase(message_window);
-    box(message_window, '|', '-');
-    mvwprintw(message_window, 0, 2, "消息");
-    
-    // 格式化消息
-    string display_line = message.username + ": " + message.content;
-    
-    // 限制显示长度
-    if ((int)display_line.length() > max_x - 4) {
-        display_line = display_line.substr(0, max_x - 7) + "...";
-    }
-    
-    // 在底部显示新消息
-    mvwprintw(message_window, max_y - 2, 2, "%s", display_line.c_str());
-    
-    // 重置滚动位置到底部
-    message_scroll_pos = 0;
-    
-    wrefresh(message_window);
-}
 
 void WindowManager::render_chats(const std::vector<ChatInfo> &chats)
 {

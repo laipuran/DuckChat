@@ -56,7 +56,6 @@ public:
     void clear_status();
 
     void render_chat_history(const std::vector<Message> &messages);
-    void render_new_message(const Message &message);
     void render_chats(const std::vector<ChatInfo> &chats);
     void render_new_chat(const ChatInfo &chat_info);
     
