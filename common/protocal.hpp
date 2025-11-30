@@ -4,6 +4,10 @@
 #include <string>
 using Json = nlohmann::json;
 
+// 简化的分段传输常量
+const uint32_t MAX_PACKET_SIZE = 2 * 1024 * 1024;  // 增加到2MB
+const uint32_t RECV_BUFFER_SIZE = 4096;  // 接收缓冲区大小
+
 struct ChatInfo
 {
     std::string chat_id;
