@@ -41,6 +41,7 @@ public:
     void handle_new_message(const ServerPacket &packet);
     void handle_new_chat(const ServerPacket &packet);
     void handle_recall_message(const ServerPacket &packet);
+    void handle_switch_chat(int index);
 
     void create_chat(const std::string &chatname);
     void join_chat(const std::string &chat_id);
@@ -48,6 +49,7 @@ public:
 
     void add_message(const std::string &message);
     void recall_message(const std::string &message_id);
+    void fetch_messages(const std::string &chat_id);
     
     // 访问器方法
     std::vector<Message> get_current_chat_messages();

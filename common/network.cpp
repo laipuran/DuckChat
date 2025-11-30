@@ -70,7 +70,7 @@ ClientPacket recv_client_packet(int socket)
     const uint32_t MAX_PACKET_SIZE = 1024 * 1024;
     if (host_length > MAX_PACKET_SIZE)
     {
-        log(LogLevel::ERROR, "Packet too large: " + to_string(host_length));
+        //log(LogLevel::ERROR, "Packet too large: " + to_string(host_length));
         return ClientPacket();
     }
 
@@ -116,7 +116,7 @@ ServerPacket recv_server_packet(int socket)
     const uint32_t MAX_PACKET_SIZE = 1024 * 1024;
     if (host_length > MAX_PACKET_SIZE)
     {
-        log(LogLevel::ERROR, "Packet too large: " + to_string(host_length));
+        //log(LogLevel::ERROR, "Packet too large: " + to_string(host_length));
         return ServerPacket();
     }
 

@@ -32,6 +32,7 @@ private:
     int chat_scroll_pos;
     int max_message_lines;
     int max_chat_lines;
+    int selected_chat_index = 0;
     
     // 窗口模式
     WindowMode current_window_mode;

@@ -130,15 +130,14 @@ int main()
     //     }
 #pragma endregion
 
+    thread client_thread_receive(handle_server_receive);
+    client_thread_receive.detach();
+
     chat_manager = ChatManager(server_fd, &window_manager, received_packet.user_id, received_packet.username);
     chat_manager.initiate();
     window_manager.chat_manager = &chat_manager;
     window_manager.initiate();
     window_manager.handle_input();
-
-    thread client_thread_receive(handle_server_receive);
-    client_thread_receive.detach();
-    
 }
 
 string sha256(const std::string &str)
@@ -163,6 +162,7 @@ string sha256(const std::string &str)
 
 void handle_server_receive()
 {
+    sleep(1);
     while (true)
     {
         ServerPacket packet = recv_server_packet(server_fd);
