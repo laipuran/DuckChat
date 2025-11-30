@@ -125,6 +125,11 @@ void Session::handle_session()
         }
         case ClientMessage::FETCH_MESSAGES:
         {
+            ChatInfo info;
+            info.chat_id = received_packet.chat_id;
+            info.chatname = session_manager->get_database()->get_chatname(received_packet.chat_id);
+            info.role = session_manager->get_database()->get_role(received_packet.chat_id, received_packet.user_id);
+
             ServerPacket packet;
             packet.request = ServerMessage::RETURN_MESSAGES;
             packet.status = ServerStatus::SUCCESS;  // 修复：设置状态码
@@ -132,6 +137,7 @@ void Session::handle_session()
             packet.user_id = user_id;
             packet.username = username;
             packet.messages = session_manager->get_database()->fetch_chat_messages(received_packet.chat_id);
+            packet.chats.push_back(info);
             send_packet(socket, packet);
             break;
         }
