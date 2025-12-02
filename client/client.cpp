@@ -33,14 +33,17 @@ int main() {
     log(LogLevel::INFO, "客户端启动");
 
     cout<<"请输入服务器ip："<<endl;
-
     string ip;
     getline(cin, ip);
+    cout<<"请输入端口："<<endl;
+    int port;
+    cin>>port;
+    cin.ignore();
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     sockaddr_in serv_addr;
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(5001);
+    serv_addr.sin_port = htons(port);
     inet_pton(AF_INET, ip.c_str(), &serv_addr.sin_addr);
 
     while (true) {
