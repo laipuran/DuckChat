@@ -2,7 +2,7 @@
 #include <cstring>
 #include <sqlite3.h>
 #include "../common/protocal.hpp"
-#include"../common/protocal.hpp"
+#include "../common/protocal.hpp"
 
 class Database
 {
@@ -35,13 +35,16 @@ public:
 
     std::string get_chatname(const std::string chat_id);
 
-    std::string get_role(const std::string& chat_id, const std::string& user_id);
+    std::string get_role(const std::string &chat_id, const std::string &user_id);
 
     std::vector<ChatInfo> list_user_chats(
         const std::string &user_id);
 
     std::vector<Message> fetch_chat_messages(
         const std::string &chat_id);
+
+    std::string get_chat_id_from_message_id(const std::string &message_id);
+    std::string get_sender_id_from_message_id(const std::string &message_id);
 
     bool add_chat(
         const std::string &user_id,

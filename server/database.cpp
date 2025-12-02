@@ -283,6 +283,38 @@ vector<Message> Database::fetch_chat_messages(const string &chat_id)
     return messages;
 }
 
+string Database::get_chat_id_from_message_id(const std::string &message_id)
+{
+    sqlite3_stmt *statement;
+    const char *sql = "SELECT chat_id FROM messages WHERE message_id = ?;";
+
+    sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
+    sqlite3_bind_text(statement, 1, message_id.c_str(), -1, SQLITE_TRANSIENT);
+
+    string chat_id;
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        chat_id = reinterpret_cast<const char *>(sqlite3_column_text(statement, 0));
+    }
+    return chat_id;
+}
+
+string Database::get_sender_id_from_message_id(const std::string &message_id)
+{
+    sqlite3_stmt *statement;
+    const char *sql = "SELECT sender_id FROM messages WHERE message_id = ?;";
+
+    sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
+    sqlite3_bind_text(statement, 1, message_id.c_str(), -1, SQLITE_TRANSIENT);
+
+    string user_id;
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        user_id = reinterpret_cast<const char *>(sqlite3_column_text(statement, 0));
+    }
+    return user_id;
+}
+
 bool Database::add_chat(
     const std::string &user_id,
     const std::string &chat_id,
