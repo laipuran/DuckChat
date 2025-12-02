@@ -24,6 +24,7 @@ jobs:
         cp config.sh config_debug.sh
         sed -i 's/CXXFLAGS="-g3 -O0/CXXFLAGS="-g3 -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined/' config_debug.sh
         sed -i 's/include config.sh/include config_debug.sh/' build.sh
+        chmod +x build.sh
         ./build.sh all
         
     - name: Run basic functionality test
