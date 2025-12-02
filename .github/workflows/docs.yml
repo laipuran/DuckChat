@@ -4,6 +4,7 @@ on:
   push:
     branches: [ master ]
     paths: [ 'docs/**', '*.md', 'server/**/*.hpp', 'client/**/*.hpp', 'common/**/*.hpp' ]
+  workflow_dispatch:
 
 jobs:
   generate-docs:
@@ -176,11 +177,22 @@ jobs:
       if: github.ref == 'refs/heads/master'
       uses: actions/configure-pages@v4
       
+    - name: Check if docs directory exists
+      if: github.ref == 'refs/heads/master'
+      run: |
+        echo "Checking docs directory structure:"
+        ls -la docs/
+        echo "Checking _build directory:"
+        ls -la docs/_build/ || echo "_build directory not found"
+        echo "Checking html directory:"
+        ls -la docs/_build/html/ || echo "html directory not found"
+        
     - name: Upload artifact
       if: github.ref == 'refs/heads/master'
       uses: actions/upload-pages-artifact@v3
       with:
         path: ./docs/_build/html
+        retention-days: 1
         
   deploy:
     needs: generate-docs
@@ -196,6 +208,21 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
       
     steps:
+    - name: Debug workflow info
+      run: |
+        echo "Current ref: ${{ github.ref }}"
+        echo "Repository: ${{ github.repository }}"
+        echo "Run ID: ${{ github.run_id }}"
+        echo "Run attempt: ${{ github.run_attempt }}"
+        
+    - name: Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: github-pages
+        path: ./docs/_build/html
+        
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v3
+      with:
+        artifact_name: github-pages
