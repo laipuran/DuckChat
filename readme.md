@@ -68,7 +68,7 @@ brew install gcc make openssl sqlite ncurses
 #### 方法1: 使用构建脚本
 ```bash
 # 克隆项目
-git clone https://github.com/你的用户名/DuckChat.git
+git clone https://github.com/laipuran/DuckChat.git
 cd DuckChat
 
 # 编译所有组件
@@ -153,11 +153,11 @@ valgrind --leak-check=full ./server/server
 
 ### CI/CD 状态
 
-[![Build and Test](https://github.com/你的用户名/DuckChat/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/你的用户名/DuckChat/actions/workflows/build-and-test.yml)
-[![Code Quality](https://github.com/你的用户名/DuckChat/actions/workflows/code-quality.yml/badge.svg)](https://github.com/你的用户名/DuckChat/actions/workflows/code-quality.yml)
-[![Memory Check](https://github.com/你的用户名/DuckChat/actions/workflows/memory-check.yml/badge.svg)](https://github.com/你的用户名/DuckChat/actions/workflows/memory-check.yml)
-[![Documentation](https://github.com/你的用户名/DuckChat/actions/workflows/docs.yml/badge.svg)](https://github.com/你的用户名/DuckChat/actions/workflows/docs.yml)
-[![Benchmark](https://github.com/你的用户名/DuckChat/actions/workflows/benchmark.yml/badge.svg)](https://github.com/你的用户名/DuckChat/actions/workflows/benchmark.yml)
+[![Build and Test](https://github.com/laipuran/DuckChat/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/laipuran/DuckChat/actions/workflows/build-and-test.yml)
+[![Code Quality](https://github.com/laipuran/DuckChat/actions/workflows/code-quality.yml/badge.svg)](https://github.com/laipuran/DuckChat/actions/workflows/code-quality.yml)
+[![Memory Check](https://github.com/laipuran/DuckChat/actions/workflows/memory-check.yml/badge.svg)](https://github.com/laipuran/DuckChat/actions/workflows/memory-check.yml)
+[![Documentation](https://github.com/laipuran/DuckChat/actions/workflows/docs.yml/badge.svg)](https://github.com/laipuran/DuckChat/actions/workflows/docs.yml)
+[![Benchmark](https://github.com/laipuran/DuckChat/actions/workflows/benchmark.yml/badge.svg)](https://github.com/laipuran/DuckChat/actions/workflows/benchmark.yml)
 
 ### 工作流说明
 - **构建测试**: 多平台、多编译器构建验证
@@ -206,7 +206,7 @@ valgrind --leak-check=full ./server/server
 
 如果你发现任何问题或有改进建议，请：
 
-1. 查看 [Issues](https://github.com/你的用户名/DuckChat/issues) 确认问题未被报告
+1. 查看 [Issues](https://github.com/laipuran/DuckChat/issues) 确认问题未被报告
 2. 创建新的 Issue，详细描述问题
 3. 提供复现步骤和环境信息
 4. 添加相关标签
