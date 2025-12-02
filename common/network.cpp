@@ -2,7 +2,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sqlite3.h>
 #include <signal.h>
 #include "network.hpp"
 #include "../common/log_helper.hpp"

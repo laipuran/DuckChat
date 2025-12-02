@@ -13,7 +13,7 @@ using namespace std;
 void WindowManager::initiate()
 {
     // 设置locale以支持UTF-8
-    setlocale(LC_ALL, "zh_CN.UTF-8");
+    setlocale(LC_ALL, "C.UTF-8");
 
     // 初始化 ncursesw (宽字符版本)
     initscr();
