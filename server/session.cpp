@@ -63,11 +63,7 @@ void Session::handle_session()
         }
         case ClientMessage::RECALL:
         {
-            ServerStatus status = handle_recall_message(received_packet);
-            ServerPacket packet;
-            packet.request = ServerMessage::NEW_MESSAGE;  // 使用现有的响应类型
-            packet.status = status;
-            send_packet(socket, packet);
+            handle_recall_message(received_packet);
             break;
         }
         case ClientMessage::LEAVE_CHAT:
@@ -89,7 +85,7 @@ void Session::handle_session()
             packet.status = handle_new_chat(received_packet, uuid);
             packet.user_id = user_id;
             packet.username = username;
-            
+
             packet.chats.push_back(info);
             send_packet(socket, packet);
             break;
@@ -101,7 +97,7 @@ void Session::handle_session()
             info.chatname = session_manager->get_database()->get_chatname(received_packet.chat_id);
             info.role = "member";
 
-            ServerPacket packet;    
+            ServerPacket packet;
             packet.request = ServerMessage::JOIN_CHAT_RESPONSE;
             packet.status = handle_join_chat(received_packet);
             packet.user_id = user_id;
@@ -115,8 +111,8 @@ void Session::handle_session()
         {
             ServerPacket packet;
             packet.request = ServerMessage::RETURN_CHATS;
-            packet.status = ServerStatus::SUCCESS;  // 修复：设置状态码
-            
+            packet.status = ServerStatus::SUCCESS; // 修复：设置状态码
+
             packet.user_id = user_id;
             packet.username = username;
             packet.chats = session_manager->get_database()->list_user_chats(received_packet.user_id);
@@ -132,8 +128,8 @@ void Session::handle_session()
 
             ServerPacket packet;
             packet.request = ServerMessage::RETURN_MESSAGES;
-            packet.status = ServerStatus::SUCCESS;  // 修复：设置状态码
-            
+            packet.status = ServerStatus::SUCCESS; // 修复：设置状态码
+
             packet.user_id = user_id;
             packet.username = username;
             packet.messages = session_manager->get_database()->fetch_chat_messages(received_packet.chat_id);
@@ -204,11 +200,14 @@ void Session::handle_message(const ClientPacket &packet)
         response_packet.status = ServerStatus::SUCCESS;
         response_packet.messages.push_back(message);
         response_packet.chats.push_back(info);
-        
+
         int target_socket = session_manager->get_socket_by_user_id(member);
-        if (target_socket != -1) {
+        if (target_socket != -1)
+        {
             send_packet(target_socket, response_packet);
-        } else {
+        }
+        else
+        {
             log(LogLevel::ERROR, "Cannot find socket for user_id: " + member);
         }
     }
@@ -238,29 +237,42 @@ ServerStatus Session::handle_join_chat(const ClientPacket &packet)
 ServerStatus Session::handle_recall_message(const ClientPacket &packet)
 {
     Database *db = session_manager->get_database();
-    
     // 删除消息
+    string sender_id = db->get_sender_id_from_message_id(packet.message_id);
+    string chat_id = db->get_chat_id_from_message_id(packet.message_id);
+    string role = db->get_role(chat_id, packet.user_id);
+
+    if (role != "admin" && sender_id != packet.user_id)
+        return ServerStatus::CHAT_NOT_FOUND;
+
     bool success = db->delete_message(packet.message_id);
-    if (success) {
+    
+    if (success)
+    {
         log(LogLevel::INFO, "Message " + packet.message_id + " recalled by " + packet.user_id);
         return ServerStatus::SUCCESS;
-    } else {
+    }
+    else
+    {
         log(LogLevel::ERROR, "Failed to recall message " + packet.message_id);
-        return ServerStatus::CHAT_NOT_FOUND;  // 使用现有状态码表示消息不存在
+        return ServerStatus::CHAT_NOT_FOUND; // 使用现有状态码表示消息不存在
     }
 }
 
 ServerStatus Session::handle_leave_chat(const ClientPacket &packet)
 {
     Database *db = session_manager->get_database();
-    
+
     // 退出聊天室
     bool success = db->leave_chat(packet.user_id, packet.chat_id);
-    if (success) {
+    if (success)
+    {
         log(LogLevel::INFO, "User " + packet.user_id + " left chat " + packet.chat_id);
         return ServerStatus::SUCCESS;
-    } else {
+    }
+    else
+    {
         log(LogLevel::ERROR, "Failed to leave chat " + packet.chat_id);
-        return ServerStatus::CHAT_NOT_FOUND;  // 使用现有状态码表示聊天室不存在
+        return ServerStatus::CHAT_NOT_FOUND; // 使用现有状态码表示聊天室不存在
     }
 }
