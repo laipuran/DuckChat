@@ -2,7 +2,7 @@ name: Documentation
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
     paths: [ 'docs/**', '*.md', 'server/**/*.hpp', 'client/**/*.hpp', 'common/**/*.hpp' ]
 
 jobs:
@@ -173,11 +173,11 @@ jobs:
         doxygen Doxyfile
         
     - name: Setup GitHub Pages
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/master'
       uses: actions/configure-pages@v3
       
     - name: Upload artifact
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/master'
       uses: actions/upload-pages-artifact@v2
       with:
         path: ./docs/_build/html
@@ -185,7 +185,7 @@ jobs:
   deploy:
     needs: generate-docs
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     
     permissions:
       pages: write
