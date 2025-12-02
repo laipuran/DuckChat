@@ -111,9 +111,15 @@ void WindowManager::handle_input()
             current_input_mode = InputMode::COMMAND;
             break;
         }
-        case 's':
+        case 'l':
         {
-
+            show_status("确认退出？(y/n)");
+            char flag = getch();
+            if (flag == 'y' || flag == 'Y')
+            {
+                chat_manager->leave_chat((chat_manager->get_chat_list())[selected_chat_index].chat_id);
+                show_status("离开聊天", false);
+            }
             break;
         }
         case ':':
@@ -160,6 +166,14 @@ void WindowManager::handle_input()
                         show_status("离开聊天", false);
                     }
                 }
+                else if (command == "rm")
+                {
+                    if (chat_manager)
+                    {
+                        chat_manager->recall_message(parameter);
+                        show_status("撤回消息", false);
+                    }
+                }
                 else if (command == "help")
                 {
                     show_status("命令: :cc <名称>创建, :jc <ID>加入, :lc <ID>离开, m发送消息, q退出", false);
@@ -182,7 +196,7 @@ void WindowManager::handle_input()
             else
             {
                 scroll_chats(-1);
-                
+
                 auto chat_list = chat_manager->get_chat_list();
                 if (chat_list.size() == 0)
                     break;
@@ -321,7 +335,7 @@ void WindowManager::render_chat_history(const std::vector<Message> &messages)
         {
             time_str = "[" + msg.timestamp.substr(11, 5) + "] "; // 只显示时分
         }
-        string display_line = time_str + msg.username + ": " + msg.content;
+        string display_line = time_str + " " + msg.message_id + " " + msg.username + ": " + msg.content;
 
         // 限制显示长度，防止超出窗口
         int max_len = max_x - BORDER_PADDING;
@@ -386,6 +400,11 @@ void WindowManager::render_chats(const std::vector<ChatInfo> &chats)
     box(chat_list_window, '|', '-');
     mvwprintw(chat_list_window, 0, 2, "聊天列表");
 
+    if (selected_chat_index > (int)chats.size())
+    {
+        selected_chat_index = -1;
+    }
+
     // 计算可见的聊天范围
     int start_idx = chat_scroll_pos;
     int end_idx = min((int)chats.size(), start_idx + max_chat_lines);
@@ -394,7 +413,7 @@ void WindowManager::render_chats(const std::vector<ChatInfo> &chats)
     for (int i = start_idx; i < end_idx; i++)
     {
         const ChatInfo &chat = chats[i];
-        string display_line = chat.chatname;
+        string display_line = chat.chatname + " " + chat.chat_id;
 
         // 如果是当前选中的聊天，高亮显示
         if (i == start_idx && current_window_mode == WindowMode::CHAT_LIST)

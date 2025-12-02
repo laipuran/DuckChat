@@ -130,6 +130,8 @@ void ChatManager::handle_new_chat(const ServerPacket &packet)
 
 void ChatManager::handle_switch_chat(int index)
 {
+    if (index < 0 || index > (int)chat_list.size())
+        return;
     ChatInfo chat = chat_list[index];
     current_chat_id = chat_list[index].chat_id;
     log(LogLevel::INFO, "选择聊天室：" + current_chat_id);
@@ -161,6 +163,14 @@ void ChatManager::leave_chat(const std::string &chat_id)
     std::string target_chat_id = chat_id.empty() ? current_chat_id : chat_id;
     log(LogLevel::INFO, "离开聊天室: " + target_chat_id);
 
+    chat_list.erase(
+        std::remove_if(chat_list.begin(), chat_list.end(),
+                       [&chat_id](const ChatInfo &chat)
+                       {
+                           return chat.chat_id == chat_id;
+                       }),
+        chat_list.end());
+
     ClientPacket packet;
     packet.request = ClientMessage::LEAVE_CHAT;
     packet.chat_id = target_chat_id;
@@ -178,6 +188,8 @@ void ChatManager::recall_message(const std::string &message_id)
     packet.message_id = message_id;
     packet.chat_id = current_chat_id;
     send_packet(server_sock, packet);
+
+    fetch_messages(current_chat_id);
 }
 
 void ChatManager::join_chat(const string &chat_id)

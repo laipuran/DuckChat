@@ -184,7 +184,6 @@ void handle_server_receive()
         case ServerMessage::CREATE_CHAT_RESPONSE:
             chat_manager.handle_new_chat(packet);
             break;
-
         default:
             break;
         }
