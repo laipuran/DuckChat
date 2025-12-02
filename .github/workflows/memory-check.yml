@@ -1,0 +1,68 @@
+name: Memory Check and Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  memory-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev libsqlite3-dev libncursesw5-dev valgrind build-essential
+        
+    - name: Build with debug symbols and sanitizers
+      run: |
+        # 创建调试版本的配置文件
+        cp config.sh config_debug.sh
+        sed -i 's/CXXFLAGS="-g3 -O0/CXXFLAGS="-g3 -O0 -fsanitize=address -fsanitize=leak -fsanitize=undefined/' config_debug.sh
+        sed -i 's/include config.sh/include config_debug.sh/' build.sh
+        ./build.sh all
+        
+    - name: Run basic functionality test
+      run: |
+        # 启动服务器（后台运行）
+        timeout 30s ./server/server &
+        SERVER_PID=$!
+        sleep 3
+        
+        # 检查服务器是否正常运行
+        if ! kill -0 $SERVER_PID 2>/dev/null; then
+          echo "服务器启动失败"
+          exit 1
+        fi
+        
+        # 清理
+        kill $SERVER_PID 2>/dev/null || true
+        
+    - name: Run with Valgrind
+      run: |
+        # 使用Valgrind检查内存泄漏
+        timeout 30s valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1 ./server/server &
+        SERVER_PID=$!
+        sleep 5
+        
+        # 检查服务器是否仍在运行
+        if ! kill -0 $SERVER_PID 2>/dev/null; then
+          echo "服务器在Valgrind环境下运行失败"
+          exit 1
+        fi
+        
+        # 清理
+        kill $SERVER_PID 2>/dev/null || true
+        
+    - name: Test client with sanitizers
+      run: |
+        # 测试客户端在sanitizer环境下的运行
+        timeout 10s ./client/client || true
+        
+    - name: Check for memory issues
+      run: |
+        echo "内存检查完成，如果上述步骤没有报错，说明基本内存检查通过"

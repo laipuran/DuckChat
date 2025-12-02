@@ -1,0 +1,37 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-20.04]
+        compiler: [g++-9, g++-11, clang++-12]
+        
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev libsqlite3-dev libncursesw5-dev build-essential
+        
+    - name: Setup compiler
+      run: |
+        echo "CXX=${{ matrix.compiler }}" >> $GITHUB_ENV
+        
+    - name: Build project
+      run: |
+        chmod +x build.sh
+        ./build.sh all
+        
+    - name: Verify binaries exist
+      run: |
+        test -f server/server
+        test -f client/client

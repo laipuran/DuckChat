@@ -1,0 +1,201 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'docs/**', '*.md', 'server/**/*.hpp', 'client/**/*.hpp', 'common/**/*.hpp' ]
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Doxygen
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y doxygen graphviz
+        
+    - name: Generate documentation
+      run: |
+        # 创建Doxygen配置文件
+        cat > Doxyfile << EOF
+        PROJECT_NAME           = DuckChat
+        PROJECT_BRIEF          = "一个简单的聊天室应用"
+        INPUT                  = server/ client/ common/ docs/
+        RECURSIVE              = YES
+        OUTPUT_DIRECTORY       = docs/_build
+        GENERATE_HTML          = YES
+        GENERATE_LATEX         = NO
+        GENERATE_XML           = NO
+        GENERATE_RTF           = NO
+        GENERATE_MAN           = NO
+        GENERATE_TREEVIEW      = YES
+        TREEVIEW_WIDTH         = 250
+        EXTRACT_ALL            = YES
+        EXTRACT_PRIVATE        = NO
+        EXTRACT_STATIC         = NO
+        EXTRACT_LOCAL_CLASSES  = NO
+        EXTRACT_ANON_NSPACES   = NO
+        HIDE_UNDOC_MEMBERS     = NO
+        HIDE_UNDOC_CLASSES     = NO
+        HIDE_FRIEND_COMPOUNDS  = NO
+        HIDE_IN_BODY_DOCS      = NO
+        INTERNAL_DOCS          = NO
+        CASE_SENSE_NAMES       = YES
+        HIDE_SCOPE_NAMES       = NO
+        SHOW_INCLUDE_FILES     = YES
+        INLINE_INFO            = YES
+        SORT_MEMBER_DOCS       = YES
+        SORT_BRIEF_DOCS        = NO
+        SORT_BY_SCOPE_NAME     = NO
+        GENERATE_TODOLIST      = YES
+        GENERATE_TESTLIST      = YES
+        GENERATE_BUGLIST       = YES
+        GENERATE_DEPRECATEDLIST= YES
+        ENABLED_SECTIONS       = 
+        MAX_INITIALIZER_LINES  = 30
+        SHOW_USED_FILES        = YES
+        SHOW_DIRECTORIES       = YES
+        SHOW_FILES             = YES
+        SHOW_NAMESPACES        = YES
+        FILE_VERSION_FILTER    = 
+        LAYOUT_FILE            = 
+        QUIET                  = NO
+        WARNINGS               = YES
+        WARN_IF_UNDOCUMENTED   = YES
+        WARN_IF_DOC_ERROR      = YES
+        WARN_NO_PARAMDOC       = NO
+        WARN_FORMAT            = "$file:$line: $text"
+        WARN_LOGFILE           = 
+        INPUT_ENCODING         = UTF-8
+        FILE_PATTERNS          = *.c \
+                                 *.cc \
+                                 *.cxx \
+                                 *.cpp \
+                                 *.c++ \
+                                 *.java \
+                                 *.ii \
+                                 *.ixx \
+                                 *.ipp \
+                                 *.i++ \
+                                 *.inl \
+                                 *.h \
+                                 *.hh \
+                                 *.hxx \
+                                 *.hpp \
+                                 *.h++ \
+                                 *.idl \
+                                 *.odl \
+                                 *.cs \
+                                 *.php \
+                                 *.php3 \
+                                 *.inc \
+                                 *.m \
+                                 *.mm \
+                                 *.py \
+                                 *.f90 \
+                                 *.f \
+                                 *.for \
+                                 *.vhd \
+                                 *.vhdl \
+                                 *.tcl \
+                                 *.ksh \
+                                 *.sh \
+                                 *.sh3 \
+                                 *.sh4 \
+                                 *.sh5 \
+                                 *.md \
+                                 *.markdown
+        RECURSIVE              = YES
+        EXCLUDE                = 
+        EXCLUDE_SYMLINKS       = NO
+        EXCLUDE_PATTERNS       = 
+        EXCLUDE_SYMBOLS        = 
+        EXAMPLE_PATH           = 
+        EXAMPLE_PATTERNS       = *
+        EXAMPLE_RECURSIVE      = NO
+        IMAGE_PATH             = 
+        INPUT_FILTER           = 
+        FILTER_PATTERNS        = 
+        FILTER_SOURCE_FILES    = NO
+        FILTER_SOURCE_PATTERNS = 
+        SOURCE_BROWSER         = YES
+        INLINE_SOURCES         = NO
+        STRIP_CODE_COMMENTS    = YES
+        REFERENCED_BY_RELATION = NO
+        REFERENCES_RELATION    = NO
+        REFERENCES_LINK_SOURCE = YES
+        USE_HTAGS              = NO
+        VERBATIM_HEADERS       = YES
+        ALPHABETICAL_INDEX     = YES
+        COLS_IN_ALPHA_INDEX    = 5
+        IGNORE_PREFIX          = 
+        GENERATE_HTML          = YES
+        HTML_OUTPUT            = html
+        HTML_FILE_EXTENSION    = .html
+        HTML_HEADER            = 
+        HTML_FOOTER            = 
+        HTML_STYLESHEET        = 
+        HTML_ALIGN_MEMBERS     = YES
+        HTML_DYNAMIC_SECTIONS  = NO
+        GENERATE_DOCSET        = NO
+        DOCSET_FEEDNAME        = "Doxygen generated docs"
+        DOCSET_BUNDLE_ID       = org.doxygen.Project
+        DOCSET_PUBLISHER_ID    = org.doxygen.Publisher
+        DOCSET_PUBLISHER_NAME  = Publisher
+        GENERATE_HTMLHELP      = NO
+        CHM_FILE               = 
+        HHC_LOCATION           = 
+        GENERATE_CHI           = NO
+        BINARY_TOC             = NO
+        TOC_EXPAND             = NO
+        GENERATE_QHP           = NO
+        QCH_FILE               = 
+        QHP_NAMESPACE          = org.doxygen.Project
+        QHP_VIRTUAL_FOLDER     = doc
+        QHP_CUST_FILTER_NAME   = 
+        QHP_CUST_FILTER_ATTRS  = 
+        QHP_SECT_FILTER_ATTRS  = 
+        QHG_LOCATION           = 
+        GENERATE_ECLIPSEHELP   = NO
+        ECLIPSE_DOC_ID         = org.doxygen.Project
+        DISABLE_INDEX          = NO
+        ENUM_VALUES_PER_LINE   = 4
+        GENERATE_TREEVIEW      = YES
+        TREEVIEW_WIDTH         = 250
+        FORMULA_FONTSIZE       = 10
+        SEARCHENGINE           = YES
+        SERVER_BASED_SEARCH    = NO
+        EOF
+        
+        doxygen Doxyfile
+        
+    - name: Setup GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: actions/configure-pages@v3
+      
+    - name: Upload artifact
+      if: github.ref == 'refs/heads/main'
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: ./docs/_build/html
+        
+  deploy:
+    needs: generate-docs
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    permissions:
+      pages: write
+      id-token: write
+      
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2

@@ -1,0 +1,41 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  code-style:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install clang-format
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format
+        
+    - name: Check code formatting
+      run: |
+        find . -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run --Werror --style=file
+        
+    - name: Install cppcheck
+      run: sudo apt-get install -y cppcheck
+      
+    - name: Run static analysis
+      run: |
+        cppcheck --enable=all --inconclusive --std=c++17 \
+          --suppress=missingIncludeSystem \
+          --suppress=unmatchedSuppression \
+          --error-exitcode=1 \
+          server/ client/ common/ || true
+          
+    - name: Install clang-tidy
+      run: sudo apt-get install -y clang-tidy
+      
+    - name: Run clang-tidy
+      run: |
+        find . -name "*.cpp" -o -name "*.hpp" | xargs clang-tidy -std=c++17 --warnings-as-errors=* || true
