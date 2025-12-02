@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <netdb.h>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
@@ -32,19 +33,29 @@ string sha256(const std::string& str);
 int main() {
     log(LogLevel::INFO, "客户端启动");
 
-    cout<<"请输入服务器ip："<<endl;
-    string ip;
-    getline(cin, ip);
+    cout<<"请输入服务器地址(ip或域名)："<<endl;
+    string server_addr;
+    getline(cin, server_addr);
     cout<<"请输入端口："<<endl;
     int port;
     cin>>port;
     cin.ignore();
 
+    // 使用getaddrinfo进行DNS解析
+    struct addrinfo hints, *result;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;  // IPv4
+    hints.ai_socktype = SOCK_STREAM;
+
+    int status = getaddrinfo(server_addr.c_str(), to_string(port).c_str(), &hints, &result);
+    if (status != 0) {
+        cerr << "错误：无法解析服务器地址 " << server_addr << " : " << gai_strerror(status) << endl;
+        return 1;
+    }
+
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    sockaddr_in serv_addr;
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(port);
-    inet_pton(AF_INET, ip.c_str(), &serv_addr.sin_addr);
+    sockaddr_in serv_addr = *(sockaddr_in*)result->ai_addr;
+    freeaddrinfo(result);  // 释放内存
 
     while (true) {
         int result = connect(server_fd, (sockaddr*)&serv_addr, sizeof(serv_addr));
