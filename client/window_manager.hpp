@@ -40,6 +40,9 @@ private:
 
 public:
     ChatManager *chat_manager;
+    
+    // 标记是否是第一次初始化
+    static bool first_initiation;
 
     void initiate();
     void handle_input();
@@ -61,4 +64,7 @@ public:
     
     // 输入处理改进
     std::string get_input();
+    
+    // 显示开屏字符画
+    void show_splash_art();
 };
