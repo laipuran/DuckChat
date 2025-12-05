@@ -10,6 +10,9 @@
 
 using namespace std;
 
+// 初始化静态变量
+bool WindowManager::first_initiation = true;
+
 void WindowManager::initiate() {
     // 设置locale以支持UTF-8
     setlocale(LC_ALL, "C.UTF-8");
@@ -84,8 +87,15 @@ void WindowManager::initiate() {
     wnoutrefresh(input_window);
     doupdate();
 
-    if (chat_list_window)
-        render_chats(chat_manager->get_chat_list());
+    // 只在第一次初始化时显示字符画
+    if (first_initiation) {
+        show_splash_art();
+        first_initiation = false;
+    } else {
+        // 第二次及以后的初始化，直接显示聊天列表
+        if (chat_list_window)
+            render_chats(chat_manager->get_chat_list());
+    }
 }
 
 void WindowManager::handle_input() {
@@ -540,7 +550,7 @@ std::string WindowManager::get_input() {
     if (!input_window)
         return "";
 
-    char buffer[256];
+    char buffer[1024];
 
     // 清空输入窗口
     werase(input_window);
@@ -565,4 +575,116 @@ std::string WindowManager::get_input() {
     noecho();
 
     return string(buffer);
+}
+
+void WindowManager::show_splash_art() {
+    // 清屏并显示字符画
+    clear();
+    refresh();
+    
+    // 获取终端尺寸
+    int scr_line, scr_col;
+    getmaxyx(stdscr, scr_line, scr_col);
+    
+    // 根据窗口宽度决定显示内容
+    if (scr_line < 4) {
+        // 窗口太窄，只显示简单的DuckChat文字
+        mvprintw(scr_line / 2, (scr_col - 8) / 2, "DuckChat");
+        
+        mvprintw(scr_line / 2 + 2, (scr_col - 18) / 2, "按任意键继续...");
+    } else if (scr_col < 60 || scr_line < 10) {
+        // 窗口较窄，只显示鸭子部分
+        const char* duck_art[] = {
+            "                 __",
+            "               <(o )___",
+            "                ( ._> /",
+            "                 `---'"
+        };
+        
+        int art_height = sizeof(duck_art) / sizeof(duck_art[0]);
+        int start_line = (scr_line - art_height) / 2;
+        
+        for (int i = 0; i < art_height; i++) {
+            int start_col = (scr_col - strlen(duck_art[2])) / 2;
+            mvprintw(start_line + i, start_col, "%s", duck_art[i]);
+        }
+        
+        mvprintw(start_line + art_height + 2, (scr_col - 18) / 2, "按任意键继续...");
+    } else {
+        // 窗口足够宽，显示完整字符画
+        const char* full_art[] = {
+            "                 __",
+            "               <(o )___",
+            "                ( ._> /",
+            "                 `---'",
+            "    ____             __   ________          __",
+            "   / __ \\__  _______/ /__/ ____/ /_  ____ _/ /_",
+            "  / / / / / / / ___/ //_/ /   / __ \\/ __ `/ __/",
+            " / /_/ / /_/ / /__/ ,< / /___/ / / / /_/ / /_",
+            "/_____/\\__,_/\\___/_/|_|\\____/_/ /_/\\__,_/\\__/"
+        };
+        
+        int art_height = sizeof(full_art) / sizeof(full_art[0]);
+        int start_line = (scr_line - art_height) / 2;
+        
+        for (int i = 0; i < art_height; i++) {
+            int start_col = (scr_col - strlen(full_art[8])) / 2;
+            mvprintw(start_line + i, start_col, "%s", full_art[i]);
+        }
+        
+        mvprintw(start_line + art_height + 2, (scr_col - 30) / 2, "欢迎使用 DuckChat! 按任意键继续...");
+    }
+    
+    refresh();
+    
+    // 等待用户按任意键
+    noecho();
+    getch();
+    echo();
+    
+    // 重新初始化界面
+    clear();
+    refresh();
+    
+    // 重新创建窗口
+    chat_list_window = newwin(scr_line - 2, scr_col / 4, 0, 0);
+    message_window = newwin(scr_line - 2, scr_col - scr_col / 4, 0, scr_col / 4);
+    status_window = newwin(1, scr_col, scr_line - 2, 0);
+    input_window = newwin(1, scr_col, scr_line - 1, 0);
+    
+    // 绘制边框
+    box(chat_list_window, '|', '-');
+    box(message_window, '|', '-');
+    
+    // 在聊天列表窗口添加标题
+    wattron(chat_list_window, A_BOLD);
+    mvwprintw(chat_list_window, 0, 2, "聊天列表");
+    wattroff(chat_list_window, A_BOLD);
+    
+    // 在消息窗口添加标题
+    wattron(message_window, A_BOLD);
+    mvwprintw(message_window, 0, 2, "消息");
+    wattroff(message_window, A_BOLD);
+    
+    // 初始化状态栏
+    wattron(status_window, COLOR_PAIR(3));
+    mvwprintw(status_window, 0, 0, "欢迎使用DuckChat - 按'm'发送消息, ':'输入命令, 'q'退出");
+    wattroff(status_window, COLOR_PAIR(3));
+    
+    // 刷新所有窗口
+    touchwin(chat_list_window);
+    touchwin(message_window);
+    touchwin(status_window);
+    touchwin(input_window);
+    
+    wnoutrefresh(chat_list_window);
+    wnoutrefresh(message_window);
+    wnoutrefresh(status_window);
+    wnoutrefresh(input_window);
+    doupdate();
+    
+    // 重新渲染聊天列表
+    if (chat_list_window && chat_manager) {
+        render_chats(chat_manager->get_chat_list());
+    }
 }
