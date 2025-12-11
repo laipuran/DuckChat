@@ -7,6 +7,15 @@ using namespace std;
 
 Database::Database(const string &db_path)
 {
+    // 确保数据库文件的目录存在
+    filesystem::path db_file_path(db_path);
+    filesystem::path db_dir = db_file_path.parent_path();
+    
+    if (!db_dir.empty() && !filesystem::exists(db_dir)) {
+        filesystem::create_directories(db_dir);
+        log(LogLevel::INFO, "Created database directory: " + db_dir.string());
+    }
+    
     int status = sqlite3_open(db_path.data(), &db);
     if (status != SQLITE_OK)
     {
