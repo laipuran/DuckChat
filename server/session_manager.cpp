@@ -6,7 +6,7 @@
 
 using namespace std;
 
-SessionManager::SessionManager() : database(Database("duckchat.db")) {};
+SessionManager::SessionManager() : database(Database("data/duckchat.db")) {};
 
 void SessionManager::create_and_start_session(int socket)
 {

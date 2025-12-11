@@ -1,0 +1,72 @@
+# Git 相关文件
+.git
+.gitignore
+.gitattributes
+
+# 文档目录
+docs/
+README.md
+readme.md
+
+# Docker 相关文件
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 编译产物和临时文件
+*.o
+*.exe
+*.out
+*.app
+*.so
+*.dylib
+server/server
+client/client
+
+# IDE 和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+
+# 测试文件
+test/
+tests/
+*.test
+
+# 依赖目录
+node_modules/
+vendor/
+
+# 系统文件
+.cache/
+.tmp/
+temp/
+
+# 配置文件（如果包含敏感信息）
+.env
+.env.local
+.env.*.local
+
+# 备份文件
+*.bak
+*.backup
+*.old
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+
+# 数据文件
+data/
+*.db
+*.sqlite
+*.sqlite3
