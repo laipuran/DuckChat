@@ -1,22 +1,24 @@
 # 阶段 1: 公共构建阶段
-FROM debian:stable AS builder
+FROM alpine:latest AS builder
 
 # 设置工作目录
 WORKDIR /app
 
-# 配置国内APT源
-RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
-    apt-get update
+# 配置国内Alpine源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
+    apk update
 
 # 安装所有编译依赖
-RUN apt-get install -y \
+RUN apk add --no-cache \
+    bash \
     g++ \
     make \
-    libssl-dev \
-    libsqlite3-dev \
-    libncursesw5-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
+    openssl-dev \
+    sqlite-dev \
+    ncurses-dev \
+    pkgconfig \
+    tzdata \
+    && rm -rf /var/cache/apk/*
 
 # 复制项目文件
 COPY . .
@@ -28,23 +30,23 @@ RUN chmod +x build.sh config.sh
 RUN ./build.sh all
 
 # 阶段 2A: Server 运行时镜像
-FROM debian:stable-slim AS server-runtime
+FROM alpine:latest AS server-runtime
 
 # 设置工作目录
 WORKDIR /app
 
-# 配置国内APT源
-RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
-    apt-get update
+# 配置国内Alpine源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
+    apk update
 
 # 安装 Server 运行时需要的库
-RUN apt-get install -y \
-    libssl3 \
-    libsqlite3-0 \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    openssl \
+    sqlite \
+    && rm -rf /var/cache/apk/*
 
 # 创建非root用户
-RUN useradd -m -u 1000 duckchat && \
+RUN adduser -D -u 1000 duckchat && \
     chown -R duckchat:duckchat /app
 
 # 从构建阶段复制 Server 可执行文件
@@ -74,24 +76,24 @@ VOLUME [ "/data" ]
 ENTRYPOINT ["/usr/local/bin/server"]
 
 # 阶段 2B: Client 运行时镜像
-FROM debian:stable-slim AS client-runtime
+FROM alpine:latest AS client-runtime
 
 # 设置工作目录
 WORKDIR /app
 
-# 配置国内APT源
-RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
-    apt-get update
+# 配置国内Alpine源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
+    apk update
 
 # 安装 Client 运行时需要的库
-RUN apt-get install -y \
-    libncursesw5 \
-    libssl3 \
-    libsqlite3-0 \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    ncurses-libs \
+    openssl \
+    sqlite \
+    && rm -rf /var/cache/apk/*
 
 # 创建非root用户
-RUN useradd -m -u 1000 duckchat && \
+RUN adduser -D -u 1000 duckchat && \
     chown -R duckchat:duckchat /app
 
 # 从构建阶段复制 Client 可执行文件
@@ -103,10 +105,6 @@ RUN chmod +x /usr/local/bin/client
 
 # 切换到非root用户
 USER duckchat
-
-# 设置环境变量
-ENV CLIENT_HOST=localhost
-ENV CLIENT_PORT=5001
 
 # 启动 Client 进程
 ENTRYPOINT ["/usr/local/bin/client"]
