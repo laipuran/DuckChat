@@ -42,7 +42,9 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositorie
 # 安装 Server 运行时需要的库
 RUN apk add --no-cache \
     openssl \
-    sqlite \
+    sqlite-libs \
+    libstdc++ \
+    libgcc \
     && rm -rf /var/cache/apk/*
 
 # 创建非root用户
