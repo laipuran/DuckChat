@@ -116,7 +116,7 @@ string Database::get_username(const string &user_id)
     string result;
     if (sqlite3_step(statement) == SQLITE_ROW)
     {
-        const u_char *username = sqlite3_column_text(statement, 0);
+        const unsigned char *username = sqlite3_column_text(statement, 0);
         if (username != nullptr)
             result = reinterpret_cast<const char *>(username);
     }
@@ -136,7 +136,7 @@ string Database::get_password_hash(const string &user_id)
     string result;
     if (sqlite3_step(statement) == SQLITE_ROW)
     {
-        const u_char *password = sqlite3_column_text(statement, 0);
+        const unsigned char *password = sqlite3_column_text(statement, 0);
         if (password != nullptr)
             result = reinterpret_cast<const char *>(password);
     }
@@ -209,7 +209,7 @@ std::string Database::get_chatname(const std::string chat_id)
     string result;
     if (sqlite3_step(statement) == SQLITE_ROW)
     {
-        const u_char *chatname = sqlite3_column_text(statement, 0);
+        const unsigned char *chatname = sqlite3_column_text(statement, 0);
         if (chatname != nullptr)
             result = reinterpret_cast<const char *>(chatname);
     }
@@ -230,7 +230,7 @@ string Database::get_role(const std::string &chat_id, const std::string &user_id
     string result;
     if (sqlite3_step(statement) == SQLITE_ROW)
     {
-        const u_char *role = sqlite3_column_text(statement, 0);
+        const unsigned char *role = sqlite3_column_text(statement, 0);
         if (role != nullptr)
             result = reinterpret_cast<const char *>(role);
     }
@@ -354,7 +354,7 @@ std::vector<std::string> Database::get_chat_members(const std::string &chat_id)
     vector<string> result;
     while (sqlite3_step(statement) == SQLITE_ROW) // 修复：使用while循环读取所有成员
     {
-        const u_char *user_id = sqlite3_column_text(statement, 0);
+        const unsigned char *user_id = sqlite3_column_text(statement, 0);
         if (user_id != nullptr)
             result.push_back(reinterpret_cast<const char *>(user_id));
     }

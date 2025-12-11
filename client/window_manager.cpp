@@ -1,5 +1,5 @@
 #include "window_manager.hpp"
-#include <ncursesw/ncurses.h>
+#include <ncurses.h>
 #include <unistd.h>
 #include <cstring>
 #include <iostream>
