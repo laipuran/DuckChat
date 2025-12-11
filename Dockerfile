@@ -49,7 +49,9 @@ RUN apk add --no-cache \
 
 # 创建非root用户
 RUN adduser -D -u 1000 duckchat && \
-    chown -R duckchat:duckchat /app
+    chown -R duckchat:duckchat /app && \
+    mkdir -p /app/data && \
+    chown -R duckchat:duckchat /app/data
 
 # 从构建阶段复制 Server 可执行文件
 COPY --from=builder /app/server/server /usr/local/bin/server
@@ -72,7 +74,7 @@ ENV SERVER_PORT=5001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD netstat -ln | grep :5001 || exit 1
 
-VOLUME [ "/data" ]
+# VOLUME [ "/data" ]  # 注释掉，避免创建匿名卷
 
 # 启动 Server 进程
 ENTRYPOINT ["/usr/local/bin/server"]
