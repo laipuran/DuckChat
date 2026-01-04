@@ -69,6 +69,7 @@ EXPOSE 5001
 # 设置环境变量
 ENV SERVER_HOST=0.0.0.0
 ENV SERVER_PORT=5001
+ENV ENVIRONMENT=PRODUCTION
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

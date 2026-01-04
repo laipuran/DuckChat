@@ -12,6 +12,9 @@ services:
     volumes:
       # 挂载数据目录（如果需要持久化数据）
       - duckchat_data:/app/data
+    environment:
+      # 设置环境变量，可以根据需要修改为DEVELOPMENT或PRODUCTION
+      - ENVIRONMENT=PRODUCTION
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "sh", "-c", "netstat -ln | grep :5001"]
