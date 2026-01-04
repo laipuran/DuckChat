@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <cstdlib>
 #include <fstream>
 #include <chrono>
 #include <iomanip>
@@ -12,8 +13,11 @@ enum class LogLevel
     ERROR
 };
 
+const std::string ENVIRONMENT = std::getenv("ENVIRONMENT");
+
 inline void log(LogLevel level, std::string log)
 {
+    if (ENVIRONMENT == "PRODUCTION") return;
     // 获取当前时间
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
@@ -26,7 +30,7 @@ inline void log(LogLevel level, std::string log)
     time_ss << "." << std::setfill('0') << std::setw(3) << ms.count();
     
     // 打开日志文件（追加模式）
-    std::ofstream log_file("duckchat.log", std::ios::app);
+    std::ofstream log_file("data/duckchat.db", std::ios::app);
     if (log_file.is_open())
     {
         switch (level)
