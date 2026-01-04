@@ -34,7 +34,7 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Extract metadata
+    - name: Extract metadata for server
       id: meta
       uses: docker/metadata-action@v5
       with:
@@ -47,7 +47,7 @@ jobs:
           type=semver,pattern={{major}}
           type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build and push Docker image
+    - name: Build and push Server Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
@@ -61,17 +61,54 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - name: Generate SBOM
+    - name: Extract metadata for client
+      id: meta-client
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/lpuran/${{ env.IMAGE_NAME }}-client
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Client Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        target: client-runtime
+        platforms: ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
+        push: ${{ github.event_name != 'pull_request' }}
+        load: ${{ github.event_name == 'pull_request' }}
+        tags: ${{ steps.meta-client.outputs.tags }}
+        labels: ${{ steps.meta-client.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Generate SBOM for Server
       if: github.event_name != 'pull_request'
       uses: anchore/sbom-action@v0
       with:
         image: ${{ env.REGISTRY }}/lpuran/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
         format: spdx-json
-        output-file: sbom.spdx.json
+        output-file: sbom-server.spdx.json
+
+    - name: Generate SBOM for Client
+      if: github.event_name != 'pull_request'
+      uses: anchore/sbom-action@v0
+      with:
+        image: ${{ env.REGISTRY }}/lpuran/${{ env.IMAGE_NAME }}-client:${{ steps.meta-client.outputs.version }}
+        format: spdx-json
+        output-file: sbom-client.spdx.json
 
     - name: Upload SBOM
       if: github.event_name != 'pull_request'
       uses: actions/upload-artifact@v4
       with:
         name: sbom
-        path: sbom.spdx.json
+        path: |
+          sbom-server.spdx.json
+          sbom-client.spdx.json
