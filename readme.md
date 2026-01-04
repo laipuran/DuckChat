@@ -153,11 +153,8 @@ valgrind --leak-check=full ./server/server
 
 ### CI/CD 状态
 
-[![Build and Test](https://github.com/laipuran/DuckChat/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/laipuran/DuckChat/actions/workflows/build-and-test.yml)
-[![Code Quality](https://github.com/laipuran/DuckChat/actions/workflows/code-quality.yml/badge.svg)](https://github.com/laipuran/DuckChat/actions/workflows/code-quality.yml)
-[![Memory Check](https://github.com/laipuran/DuckChat/actions/workflows/memory-check.yml/badge.svg)](https://github.com/laipuran/DuckChat/actions/workflows/memory-check.yml)
 [![Documentation](https://github.com/laipuran/DuckChat/actions/workflows/docs.yml/badge.svg)](https://github.com/laipuran/DuckChat/actions/workflows/docs.yml)
-[![Benchmark](https://github.com/laipuran/DuckChat/actions/workflows/benchmark.yml/badge.svg)](https://github.com/laipuran/DuckChat/actions/workflows/benchmark.yml)
+[![Docker Build](https://github.com/laipuran/DuckChat/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/laipuran/DuckChat/actions/workflows/ducker-publish.yml)
 
 ### 工作流说明
 - **构建测试**: 多平台、多编译器构建验证
