@@ -2,11 +2,11 @@ name: Build and Publish Docker Images
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ master ]
     tags:
       - 'v*'
   pull_request:
-    branches: [ main, master ]
+    branches: [ master ]
   workflow_dispatch:
 
 env:
@@ -38,7 +38,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
+        images: ${{ env.REGISTRY }}/duckchat/${{ env.IMAGE_NAME }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -64,7 +64,7 @@ jobs:
       if: github.event_name != 'pull_request'
       uses: anchore/sbom-action@v0
       with:
-        image: ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+        image: ${{ env.REGISTRY }}/duckchat/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
         format: spdx-json
         output-file: sbom.spdx.json
 

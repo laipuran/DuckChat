@@ -193,6 +193,7 @@ jobs:
       with:
         path: ./docs/_build/html
         retention-days: 1
+        name: github-pages
         
   deploy:
     needs: generate-docs
